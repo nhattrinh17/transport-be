@@ -1,0 +1,33 @@
+import { Module, OnModuleInit } from '@nestjs/common';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import connectionSource, { typeOrmConfig } from './config/typeorm';
+import { ProvinceModule } from '@modules/province/province.module';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+      expandVariables: true,
+      cache: true,
+    }),
+    TypeOrmModule.forRootAsync({
+      useFactory: () => {
+        return typeOrmConfig;
+      },
+      dataSourceFactory: async () => {
+        const dataSource = await connectionSource.initialize();
+        return dataSource;
+      },
+    }),
+    ProvinceModule,
+  ],
+  controllers: [AppController],
+  providers: [AppService],
+})
+export class AppModule implements OnModuleInit {
+  onModuleInit() {}
+}
