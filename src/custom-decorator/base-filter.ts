@@ -117,7 +117,7 @@ export function CommonGetResponse(responseArray?: boolean) {
 
   // return applyDecorators(
   //   ApiOkResponse({
-  //     description: 'The resource was returned successfully',
+  //     description:  'The resource was returned successfully',
   //     schema: responseArray
   //       ? {
   //           type: 'object',
@@ -141,7 +141,7 @@ export function CommonGetResponse(responseArray?: boolean) {
   //         },
   //   }),
   //   ApiUnprocessableEntityResponse({
-  //     description: 'Bad Request',
+  //     description:  'Bad Request',
   //     schema: {
   //       type: 'object',
   //       properties: {
@@ -157,7 +157,7 @@ export function CommonGetResponse(responseArray?: boolean) {
   //     },
   //   }),
   //   ApiUnauthorizedResponse({
-  //     description: 'Unauthorized Request',
+  //     description:  'Unauthorized Request',
   //     schema: {
   //       type: 'object',
   //       properties: {
@@ -173,7 +173,7 @@ export function CommonGetResponse(responseArray?: boolean) {
   //     },
   //   }),
   //   ApiForbiddenResponse({
-  //     description: 'Forbidden Request',
+  //     description:  'Forbidden Request',
   //     schema: {
   //       type: 'object',
   //       properties: {
@@ -362,14 +362,14 @@ export function CommonDeleteResponse() {
   );
 }
 
-export function ApiOperationCustom(resource: string, method: string, applyReponse = true, getOne = false) {
+export function ApiOperationCustom(resource: string, method: string, description?: string, applyReponse = true, getOne = false) {
   const decorators = [];
   switch (method.toUpperCase()) {
     case 'POST':
       decorators.push(
         ApiOperation({
           summary: `Tạo mới ${resource}`,
-          description: `API tạo mới ${resource}`,
+          description: description || `API tạo mới ${resource}`,
         }),
       );
       if (applyReponse) decorators.push(CommonPostResponse());
@@ -379,7 +379,7 @@ export function ApiOperationCustom(resource: string, method: string, applyRepons
         decorators.push(
           ApiOperation({
             summary: `Lấy danh sách ${resource}`,
-            description: `API lấy danh sách ${resource}`,
+            description: description || `API lấy danh sách ${resource}`,
           }),
         );
         if (applyReponse) decorators.push(CommonGetResponse(true));
@@ -387,11 +387,11 @@ export function ApiOperationCustom(resource: string, method: string, applyRepons
         decorators.push(
           ApiOperation({
             summary: `Lấy ${resource} theo ID`,
-            description: `API lấy ${resource} theo ID`,
+            description: description || `API lấy ${resource} theo ID`,
           }),
           ApiParam({
             name: 'id',
-            description: `ID của ${resource}`,
+            description: description || `ID của ${resource}`,
           }),
         );
         if (applyReponse) decorators.push(CommonGetResponse());
@@ -401,11 +401,11 @@ export function ApiOperationCustom(resource: string, method: string, applyRepons
       decorators.push(
         ApiOperation({
           summary: `Cập nhật ${resource} theo ID`,
-          description: `API cập nhật ${resource} theo ID`,
+          description: description || `API cập nhật ${resource} theo ID`,
         }),
         ApiParam({
           name: 'id',
-          description: `ID của ${resource}`,
+          description: description || `ID của ${resource}`,
         }),
       );
       if (applyReponse) decorators.push(CommonPatchResponse());
@@ -414,11 +414,11 @@ export function ApiOperationCustom(resource: string, method: string, applyRepons
       decorators.push(
         ApiOperation({
           summary: `Xóa ${resource} theo ID`,
-          description: `API xóa ${resource} theo ID`,
+          description: description || `API xóa ${resource} theo ID`,
         }),
         ApiParam({
           name: 'id',
-          description: `ID của ${resource}`,
+          description: description || `ID của ${resource}`,
         }),
       );
       if (applyReponse) decorators.push(CommonDeleteResponse());

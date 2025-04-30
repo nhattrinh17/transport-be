@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import connectionSource, { typeOrmConfig } from './config/typeorm';
 import { ProvinceModule } from '@modules/province/province.module';
+import { FeeModule } from '@modules/fee/fee.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ProvinceModule } from '@modules/province/province.module';
       },
     }),
     ProvinceModule,
+    FeeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

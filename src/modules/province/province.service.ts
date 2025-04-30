@@ -46,8 +46,8 @@ export class ProvinceService {
   async getAllDistrict(dto: GetDistrictDto) {
     try {
       if (!dto.provinceIdGHN || !dto.provinceIdViettel) throw new Error(messageResponseError.system.missing_data);
-      const keyViettel = `${process.env.APP_ID}:district:viettel`;
-      const keyGHN = `${process.env.APP_ID}:district:ghn`;
+      const keyViettel = `${process.env.APP_ID}:district:viettel:${dto.provinceIdViettel}`;
+      const keyGHN = `${process.env.APP_ID}:district:ghn:${dto.provinceIdGHN}`;
       const ttl = 60 * 60;
       let districtViettel;
       let districtGHN;
