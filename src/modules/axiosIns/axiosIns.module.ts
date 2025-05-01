@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { TokenService } from './token.service';
+import { AxiosInsService } from './axiosIns.service';
 import { HttpModule } from '@nestjs/axios';
 import RedisService from '@common/services/redis.service';
 
 @Module({
   imports: [HttpModule],
-  providers: [TokenService, RedisService],
-  exports: [TokenService],
+  providers: [AxiosInsService, RedisService],
+  exports: [AxiosInsService],
 })
-export class TokenModule {}
+export class AxiosInsModule {}

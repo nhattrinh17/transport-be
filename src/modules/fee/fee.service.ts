@@ -1,5 +1,5 @@
 import RedisService from '@common/services/redis.service';
-import { TokenService } from '@modules/token/token.service';
+import { AxiosInsService } from '@modules/axiosIns/axiosIns.service';
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { GetFeeDto, GetServiceAvailableDto } from './dto/create-fee.dto';
@@ -8,47 +8,32 @@ import { GetFeeDto, GetServiceAvailableDto } from './dto/create-fee.dto';
 export class FeeService {
   constructor(
     private readonly httpService: HttpService,
-    private readonly tokenService: TokenService,
+    private readonly axiosInsService: AxiosInsService,
   ) {}
 
   async getServiceAvailable(dto: GetServiceAvailableDto) {
     try {
-      const tokenViettel = await this.tokenService.getTokenViettel();
+      const axiosInstanceViettel = await this.axiosInsService.axiosInstanceViettel();
+      const axiosInstanceGHN = await this.axiosInsService.axiosInstanceGHN();
       const serviceViettel = (
-        await this.httpService.axiosRef.post(
-          `${process.env.URL_BASE_VIETTEL}/order/getPriceAll`,
-          {
-            SENDER_PROVINCE: dto.senderProvince,
-            SENDER_DISTRICT: dto.senderDistrict,
-            RECEIVER_PROVINCE: dto.receiverProvince,
-            RECEIVER_DISTRICT: dto.receiverDistrict,
-            PRODUCT_TYPE: dto.productType,
-            PRODUCT_WEIGHT: dto.productWeight,
-            PRODUCT_PRICE: dto.productPrice,
-            MONEY_COLLECTION: dto.moneyCollection,
-            TYPE: 1,
-          },
-          {
-            headers: {
-              Token: tokenViettel,
-            },
-          },
-        )
+        await axiosInstanceViettel.post(`/order/getPriceAll`, {
+          SENDER_PROVINCE: dto.senderProvince,
+          SENDER_DISTRICT: dto.senderDistrict,
+          RECEIVER_PROVINCE: dto.receiverProvince,
+          RECEIVER_DISTRICT: dto.receiverDistrict,
+          PRODUCT_TYPE: dto.productType,
+          PRODUCT_WEIGHT: dto.productWeight,
+          PRODUCT_PRICE: dto.productPrice,
+          MONEY_COLLECTION: dto.moneyCollection,
+          TYPE: 1,
+        })
       ).data;
       const serviceGHN = (
-        await this.httpService.axiosRef.post(
-          `${process.env.URL_BASE_GHN}/v2/shipping-order/available-services`,
-          {
-            shop_id: +process.env.SHOP_ID_GHN,
-            from_district: dto.senderDistrictGHN,
-            to_district: dto.receiverDistrictGHN,
-          },
-          {
-            headers: {
-              token: process.env.TOKEN_GHN,
-            },
-          },
-        )
+        await axiosInstanceGHN.post(`/v2/shipping-order/available-services`, {
+          shop_id: +process.env.SHOP_ID_GHN,
+          from_district: dto.senderDistrictGHN,
+          to_district: dto.receiverDistrictGHN,
+        })
       ).data;
 
       return {
@@ -62,21 +47,22 @@ export class FeeService {
   }
 
   async calculateFee(dto: GetFeeDto) {
-    const dataViettel = dto.items.map((item) => {
-      return {
-        PRODUCT_WEIGHT: item.weight,
-        PRODUCT_PRICE: dto.productPrice,
-        MONEY_COLLECTION: dto.moneyCollection,
-        ORDER_SERVICE_ADD: '',
-        ORDER_SERVICE: dto.serviceCodeViettel,
-        SENDER_PROVINCE: dto.senderProvince,
-        SENDER_DISTRICT: dto.senderDistrict,
-        RECEIVER_PROVINCE: dto.receiverProvince,
-        RECEIVER_DISTRICT: dto.receiverDistrict,
-        PRODUCT_TYPE: dto.productType,
-        NATIONAL_TYPE: 1,
-      };
-    });
+    const dataViettel = {
+      PRODUCT_WEIGHT: dto.productWeight,
+      PRODUCT_PRICE: dto.productPrice,
+      MONEY_COLLECTION: dto.moneyCollection,
+      ORDER_SERVICE_ADD: '',
+      ORDER_SERVICE: dto.serviceCodeViettel,
+      SENDER_PROVINCE: dto.senderProvince,
+      SENDER_DISTRICT: dto.senderDistrict,
+      RECEIVER_PROVINCE: dto.receiverProvince,
+      RECEIVER_DISTRICT: dto.receiverDistrict,
+      PRODUCT_TYPE: dto.productType,
+      NATIONAL_TYPE: 1,
+      PRODUCT_WIDTH: dto.productWith,
+      PRODUCT_HEIGHT: dto.productHeight,
+      PRODUCT_LENGTH: dto.productLength,
+    };
     const dataGHN = {
       service_type_id: dto.serviceTypeGHN,
       from_district_id: dto.senderDistrictGHN,
@@ -90,6 +76,13 @@ export class FeeService {
       insurance_value: dto.productPrice,
       coupon: null,
       items: dto.items,
+    };
+
+    const [feeViettel, feeGHN] = await Promise.all([(await this.axiosInsService.axiosInstanceViettel()).post(`/order/getPrice`, dataViettel), (await this.axiosInsService.axiosInstanceGHN()).post(`/v2/shipping-order/fee`, dataGHN)]);
+
+    return {
+      viettel: feeViettel.data?.data,
+      ghn: feeGHN.data?.data,
     };
   }
 }

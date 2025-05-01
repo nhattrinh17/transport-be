@@ -82,8 +82,8 @@ export class ProvinceService {
   async getAllWard(dto: GetWardsDto) {
     try {
       if (!dto.districtIdGHN || !dto.districtIdViettel) throw new Error(messageResponseError.system.missing_data);
-      const keyViettel = `${process.env.APP_ID}:wards:viettel`;
-      const keyGHN = `${process.env.APP_ID}:wards:ghn`;
+      const keyViettel = `${process.env.APP_ID}:wards:viettel:${dto.districtIdViettel}`;
+      const keyGHN = `${process.env.APP_ID}:wards:ghn:${dto.districtIdGHN}`;
       const ttl = 60 * 60;
       let wardsViettel;
       let wardsGHN;

@@ -5,6 +5,41 @@ import { IsArray, IsEnum, IsNumber, IsOptional, IsString } from 'class-validator
 
 export class CreateFeeDto {}
 
+class ItemProduct {
+  @IsString()
+  @ApiProperty({ name: 'name', type: String, description: 'Tên sp' })
+  name: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({ name: 'code', type: String, description: 'Mã sp' })
+  code: string;
+
+  @IsNumber()
+  @Transform(({ value }) => Number(value))
+  @ApiProperty({ name: 'quantity', type: Number, description: 'Số lượng sp' })
+  quantity: string;
+
+  @IsNumber()
+  @Transform(({ value }) => Number(value))
+  @ApiProperty({ name: 'weight', type: Number, description: 'Khối lượng sp' })
+  weight: string;
+
+  @IsNumber()
+  @Transform(({ value }) => Number(value))
+  @ApiProperty({ name: 'length', type: Number, description: 'Chiều dài sp' })
+  length: string;
+
+  @IsNumber()
+  @Transform(({ value }) => Number(value))
+  @ApiProperty({ name: 'width', type: Number, description: 'Chiều rộng sp' })
+  width: string;
+
+  @IsNumber()
+  @Transform(({ value }) => Number(value))
+  @ApiProperty({ name: 'height', type: Number, description: 'Chiều cao sp' })
+  height: string;
+}
 export class GetFeeDto {
   @IsString()
   @ApiProperty({ name: 'serviceCodeViettel', type: String, description: 'Mã dịch vụ' })
@@ -23,15 +58,15 @@ export class GetFeeDto {
   @Transform(({ value }) => Number(value))
   @IsNumber()
   @ApiProperty({ name: 'senderDistrict', type: Number, description: 'Mã quận huyện gửi hàng' })
-  senderDistrict: string;
+  senderDistrict: number;
 
   @Transform(({ value }) => Number(value))
   @IsNumber()
   @ApiProperty({ name: 'senderDistrictGHN', type: Number, description: 'Mã quận huyện gửi hàng GHN' })
-  senderDistrictGHN: string;
+  senderDistrictGHN: number;
 
   @IsString()
-  @ApiProperty({ name: 'senderWardCodeGHN', type: Number, description: 'Mã quận huyện gửi hàng GHN' })
+  @ApiProperty({ name: 'senderWardCodeGHN', type: String, description: 'Mã quận huyện gửi hàng GHN' })
   senderWardCodeGHN: string;
 
   @Transform(({ value }) => Number(value))
@@ -42,16 +77,16 @@ export class GetFeeDto {
   @Transform(({ value }) => Number(value))
   @IsNumber()
   @ApiProperty({ name: 'receiverDistrict', type: Number, description: 'Mã quận huyện nhận hàng' })
-  receiverDistrict: string;
+  receiverDistrict: number;
 
   @Transform(({ value }) => Number(value))
   @IsNumber()
   @ApiProperty({ name: 'receiverDistrictGHN', type: Number, description: 'Mã quận huyện nhận hàng GHN' })
-  receiverDistrictGHN: string;
+  receiverDistrictGHN: number;
 
   @Transform(({ value }) => Number(value))
   @IsNumber()
-  @ApiProperty({ name: 'receiverWardCodeGHN', type: Number, description: 'Mã quận huyện nhận hàng GHN' })
+  @ApiProperty({ name: 'receiverWardCodeGHN', type: String, description: 'Mã quận huyện nhận hàng GHN' })
   receiverWardCodeGHN: string;
 
   @IsEnum(FeeProductType)
@@ -89,44 +124,8 @@ export class GetFeeDto {
   moneyCollection: number;
 
   @IsArray()
-  @ApiProperty({ name: 'items', type: Array<ItemProduct>, isArray: true, description: 'Danh sách sản phẩm' })
+  @ApiProperty({ name: 'items', type: [ItemProduct], description: 'Danh sách sản phẩm' })
   items: ItemProduct[];
-}
-
-class ItemProduct {
-  @IsString()
-  @ApiProperty({ name: 'name', type: String, description: 'Tên sp' })
-  name: string;
-
-  @IsString()
-  @IsOptional()
-  @ApiProperty({ name: 'code', type: String, description: 'Mã sp' })
-  code: string;
-
-  @IsNumber()
-  @Transform(({ value }) => Number(value))
-  @ApiProperty({ name: 'quantity', type: Number, description: 'Số lượng sp' })
-  quantity: string;
-
-  @IsNumber()
-  @Transform(({ value }) => Number(value))
-  @ApiProperty({ name: 'height', type: Number, description: 'Chiều cao sp' })
-  height: string;
-
-  @IsNumber()
-  @Transform(({ value }) => Number(value))
-  @ApiProperty({ name: 'weight', type: Number, description: 'Khối lượng sp' })
-  weight: string;
-
-  @IsNumber()
-  @Transform(({ value }) => Number(value))
-  @ApiProperty({ name: 'width', type: Number, description: 'Chiều rộng sp' })
-  width: string;
-
-  @IsNumber()
-  @Transform(({ value }) => Number(value))
-  @ApiProperty({ name: 'length', type: Number, description: 'Chiều dài sp' })
-  length: string;
 }
 
 export class GetServiceAvailableDto {
