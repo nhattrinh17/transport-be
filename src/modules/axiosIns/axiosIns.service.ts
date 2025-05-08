@@ -3,12 +3,14 @@ import RedisService from '@common/services/redis.service';
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import axios, { AxiosInstance } from 'axios';
+import { LalamoveUtils } from 'src/utils/lalamiove.utils';
 
 @Injectable()
 export class AxiosInsService {
   constructor(
     private readonly redisService: RedisService,
     private readonly httpService: HttpService,
+    private readonly lalamoveUtils: LalamoveUtils,
   ) {}
 
   async getTokenViettel(): Promise<string> {
@@ -50,6 +52,51 @@ export class AxiosInsService {
       headers: {
         token: process.env.TOKEN_GHN,
       },
+    });
+  }
+
+  async axiosInstanceGHTK(): Promise<AxiosInstance> {
+    return axios.create({
+      baseURL: process.env.URL_BASE_GHTK,
+      headers: {
+        Token: process.env.TOKEN_GHTK,
+        'X-Client-Source': process.env.PARTNER_CODE,
+      },
+    });
+  }
+
+  async callApiLALAMOVE(method: string, path: string, dataBody?: any) {
+    try {
+      const dataSignature = this.lalamoveUtils.generateSignature(path, method, dataBody);
+      const res = await this.httpService.axiosRef.request({
+        method: method,
+        url: `${process.env.URL_BASE_LALAMOVE}${path}`,
+        data: dataBody,
+        headers: {
+          Authorization: `hmac ${dataSignature.token}`,
+          Market: 'VN',
+        },
+      });
+
+      return res.data;
+    } catch (error) {
+      console.log('🚀 ~ AxiosInsService ~ callApiLALAMOVE ~ error:', error?.response?.data);
+      throw new Error(error.message);
+    }
+  }
+
+  async axiosInstanceSuperShip(): Promise<AxiosInstance> {
+    return axios.create({
+      baseURL: process.env.URL_BASE_SUPERSHIP,
+      headers: {
+        Authorization: `Bearer ${process.env.TOKEN_SUPERSHIP}`,
+      },
+    });
+  }
+
+  async axiosInstanceNhatTin(): Promise<AxiosInstance> {
+    return axios.create({
+      baseURL: process.env.URL_BASE_NHATTIN,
     });
   }
 }

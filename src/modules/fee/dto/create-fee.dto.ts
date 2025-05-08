@@ -1,7 +1,7 @@
 import { FeeProductType } from '@common/enums/fee.enum';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsArray, IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsEnum, IsNumber, IsNumberString, IsObject, IsOptional, IsString } from 'class-validator';
 
 export class CreateFeeDto {}
 
@@ -40,15 +40,88 @@ class ItemProduct {
   @ApiProperty({ name: 'height', type: Number, description: 'Chiều cao sp' })
   height: string;
 }
+
+class ItemProductFast {
+  @Transform(({ value }) => Number(value))
+  @IsNumber()
+  @ApiProperty({ name: 'price', type: Number, description: 'Giá trị sản phẩm với ghn tối đa là 5tr ' })
+  price: number;
+
+  @Transform(({ value }) => Number(value))
+  @IsNumber()
+  @ApiProperty({ name: 'moneyCollection', type: Number, description: 'Giá trị sản phẩm với ghn tối đa là 5tr ' })
+  moneyCollection: number;
+
+  @IsNumberString()
+  @ApiProperty({ name: 'quantity', type: String, description: 'Số lượng sp' })
+  quantity: string;
+
+  @IsString()
+  @ApiProperty({ name: 'type', type: String, description: 'Loại sản phẩm' })
+  type: string;
+
+  @Transform(({ value }) => Number(value))
+  @IsNumber()
+  @ApiProperty({ name: 'weigh', type: Number, description: 'Giá trị sản phẩm với ghn tối đa là 5tr ' })
+  weigh: number;
+
+  @IsArray()
+  @ApiProperty({ name: 'categories', type: [String], description: 'Danh mục sản phẩm' })
+  categories: string[];
+
+  @IsArray()
+  @ApiProperty({ name: 'handlingInstructions', type: [String], description: 'Danh mục sản phẩm' })
+  handlingInstructions: string[];
+}
+
+class Coordinates {
+  @IsNumber()
+  @Transform(({ value }) => Number(value))
+  @ApiProperty({ name: 'lat', type: Number, description: 'Kinh độ' })
+  lat: string;
+
+  @IsNumber()
+  @Transform(({ value }) => Number(value))
+  @ApiProperty({ name: 'long', type: Number, description: 'Vĩ độ' })
+  long: string;
+}
+
+class ItemStopFast {
+  @IsObject()
+  @ApiProperty({ name: 'coordinates', type: Coordinates, description: 'Chiều cao sp' })
+  coordinates: Coordinates;
+
+  @IsString()
+  @ApiProperty({ name: 'address', type: String, description: 'Địa chỉ' })
+  address: string;
+
+  @Transform(({ value }) => Number(value))
+  @IsNumber()
+  @ApiProperty({ name: 'provinceId', type: String, description: 'Mã tỉnh gửi hàng' })
+  provinceId: number;
+
+  @IsString()
+  @ApiProperty({ name: 'province', type: String, description: 'Tên tỉnh gửi hàng' })
+  province: number;
+
+  @Transform(({ value }) => Number(value))
+  @IsNumber()
+  @ApiProperty({ name: 'districtId', type: String, description: 'Mã quận huyện gửi hàng' })
+  districtId: string;
+
+  @IsString()
+  @ApiProperty({ name: 'district', type: String, description: 'Tên quận huyện gửi hàng' })
+  district: string;
+}
 export class GetFeeDto {
   @IsString()
   @ApiProperty({ name: 'serviceCodeViettel', type: String, description: 'Mã dịch vụ' })
   serviceCodeViettel: string;
 
   @Transform(({ value }) => Number(value))
-  @IsString()
+  @IsNumber()
   @ApiProperty({ name: 'serviceTypeGHN', type: Number, description: 'Mã dịch vụ' })
-  serviceTypeGHN: string;
+  serviceTypeGHN: number;
 
   @Transform(({ value }) => Number(value))
   @IsNumber()
@@ -69,6 +142,18 @@ export class GetFeeDto {
   @ApiProperty({ name: 'senderWardCodeGHN', type: String, description: 'Mã quận huyện gửi hàng GHN' })
   senderWardCodeGHN: string;
 
+  @IsString()
+  @ApiProperty({ name: 'senderProvinceStr', type: String, description: 'Tên Tinh gửi hàng' })
+  senderProvinceStr: string;
+
+  @IsString()
+  @ApiProperty({ name: 'senderDistrictStr', type: String, description: 'Tên Quận Huyện gửi hàng' })
+  senderDistrictStr: string;
+
+  @IsString()
+  @ApiProperty({ name: 'senderWardStr', type: String, description: 'Tên Phường Xã gửi hàng' })
+  senderWardStr: string;
+
   @Transform(({ value }) => Number(value))
   @IsNumber()
   @ApiProperty({ name: 'receiverProvince', type: Number, description: 'Mã tỉnh thành nhận hàng' })
@@ -84,10 +169,21 @@ export class GetFeeDto {
   @ApiProperty({ name: 'receiverDistrictGHN', type: Number, description: 'Mã quận huyện nhận hàng GHN' })
   receiverDistrictGHN: number;
 
-  @Transform(({ value }) => Number(value))
-  @IsNumber()
+  @IsString()
   @ApiProperty({ name: 'receiverWardCodeGHN', type: String, description: 'Mã quận huyện nhận hàng GHN' })
   receiverWardCodeGHN: string;
+
+  @IsString()
+  @ApiProperty({ name: 'receiverProvinceStr', type: String, description: 'Tên Tinh gửi hàng' })
+  receiverProvinceStr: string;
+
+  @IsString()
+  @ApiProperty({ name: 'receiverDistrictStr', type: String, description: 'Tên Quận Huyện gửi hàng' })
+  receiverDistrictStr: string;
+
+  @IsString()
+  @ApiProperty({ name: 'receiverWardStr', type: String, description: 'Tên Phường Xã gửi hàng' })
+  receiverWardStr: string;
 
   @IsEnum(FeeProductType)
   @ApiProperty({ name: 'productType', enum: FeeProductType, description: 'Loại sản phẩm' })
@@ -126,6 +222,43 @@ export class GetFeeDto {
   @IsArray()
   @ApiProperty({ name: 'items', type: [ItemProduct], description: 'Danh sách sản phẩm' })
   items: ItemProduct[];
+}
+
+export class GetFeeServiceFastDto {
+  @IsString()
+  @ApiProperty({ name: 'serviceType', type: String, description: 'Loại hình phương tiện' })
+  serviceType: string;
+
+  @IsArray()
+  @ApiProperty({ name: 'specialRequestsLALA', type: [String], description: 'Yêu cầu đặc biệt' })
+  specialRequestsLALA: string[];
+
+  @IsString()
+  @ApiProperty({ name: 'language', type: String, description: 'Ngôn ngữ' })
+  language: string;
+
+  @IsArray()
+  @ApiProperty({ name: 'stops', type: [ItemStopFast], description: 'Danh sách điểm dừng' })
+  stops: ItemStopFast[];
+
+  @IsBoolean()
+  @IsOptional()
+  @ApiProperty({ name: 'isRouteOptimized', type: Boolean, description: 'Ngôn ngữ' })
+  isRouteOptimized: boolean;
+
+  @IsObject()
+  @ApiProperty({ name: 'item', type: ItemProductFast, description: 'Thông tin sản phẩm' })
+  item: ItemProductFast;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({ name: 'scheduleAt', type: String, description: 'THời gian nhận hàng' })
+  scheduleAt: string;
+
+  @Transform(({ value }) => Number(value))
+  @IsNumber()
+  @ApiProperty({ name: 'paymentMethod', type: Number, description: 'Mã hình thức thanh toán' })
+  paymentMethod: number;
 }
 
 export class GetServiceAvailableDto {

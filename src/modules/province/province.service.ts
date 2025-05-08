@@ -2,14 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { CreateProvinceDto, GetDistrictDto, GetWardsDto } from './dto/create-province.dto';
 import { UpdateProvinceDto } from './dto/update-province.dto';
 import RedisService from '@common/services/redis.service';
-import { HttpService } from '@nestjs/axios';
 import { messageResponseError } from '@common/constants';
+import { AxiosInsService } from '@modules/axiosIns/axiosIns.service';
 
 @Injectable()
 export class ProvinceService {
   constructor(
     private readonly redisService: RedisService,
-    private readonly httpService: HttpService,
+    private readonly axiosInsService: AxiosInsService,
   ) {}
 
   async getAllProvince() {
@@ -20,14 +20,16 @@ export class ProvinceService {
     let providerGHN;
     const [providerViettelRedis, providerGHNRedis] = await Promise.all([this.redisService.get(keyViettel), this.redisService.get(keyGHN)]);
     if (!providerViettelRedis) {
-      providerViettel = (await this.httpService.axiosRef.get(`${process.env.URL_BASE_VIETTEL}/categories/listProvinceById?provinceId=-1`)).data;
+      providerViettel = (await (await this.axiosInsService.axiosInstanceViettel()).get(`${process.env.URL_BASE_VIETTEL}/categories/listProvinceById?provinceId=-1`)).data;
       this.redisService.setExpire(keyViettel, JSON.stringify(providerViettel), ttl);
     } else {
       providerViettel = JSON.parse(providerViettelRedis);
     }
     if (!providerGHNRedis) {
       providerGHN = (
-        await this.httpService.axiosRef.get(`${process.env.URL_BASE_GHN}/master-data/province`, {
+        await (
+          await this.axiosInsService.axiosInstanceGHN()
+        ).get(`${process.env.URL_BASE_GHN}/master-data/province`, {
           headers: {
             TOKEN: process.env.TOKEN_GHN,
           },
@@ -53,14 +55,16 @@ export class ProvinceService {
       let districtGHN;
       const [districtViettelRedis, districtGHNRedis] = await Promise.all([this.redisService.get(keyViettel), this.redisService.get(keyGHN)]);
       if (!districtViettelRedis) {
-        districtViettel = (await this.httpService.axiosRef.get(`${process.env.URL_BASE_VIETTEL}/categories/listDistrict?provinceId=${dto.provinceIdViettel}`)).data;
+        districtViettel = (await (await this.axiosInsService.axiosInstanceViettel()).get(`${process.env.URL_BASE_VIETTEL}/categories/listDistrict?provinceId=${dto.provinceIdViettel}`)).data;
         this.redisService.setExpire(keyViettel, JSON.stringify(districtViettel), ttl);
       } else {
         districtViettel = JSON.parse(districtViettelRedis);
       }
       if (!districtGHNRedis) {
         districtGHN = (
-          await this.httpService.axiosRef.get(`${process.env.URL_BASE_GHN}/master-data/district?province_id=${dto.provinceIdGHN}`, {
+          await (
+            await this.axiosInsService.axiosInstanceGHN()
+          ).get(`${process.env.URL_BASE_GHN}/master-data/district?province_id=${dto.provinceIdGHN}`, {
             headers: {
               TOKEN: process.env.TOKEN_GHN,
             },
@@ -89,14 +93,16 @@ export class ProvinceService {
       let wardsGHN;
       const [wardsViettelRedis, wardsGHNRedis] = await Promise.all([this.redisService.get(keyViettel), this.redisService.get(keyGHN)]);
       if (!wardsViettelRedis) {
-        wardsViettel = (await this.httpService.axiosRef.get(`${process.env.URL_BASE_VIETTEL}/categories/listWards?districtId=${dto.districtIdViettel}`)).data;
+        wardsViettel = (await (await this.axiosInsService.axiosInstanceViettel()).get(`${process.env.URL_BASE_VIETTEL}/categories/listWards?districtId=${dto.districtIdViettel}`)).data;
         this.redisService.setExpire(keyViettel, JSON.stringify(wardsViettel), ttl);
       } else {
         wardsViettel = JSON.parse(wardsViettelRedis);
       }
       if (!wardsGHNRedis) {
         wardsGHN = (
-          await this.httpService.axiosRef.get(`${process.env.URL_BASE_GHN}/master-data/ward?district_id=${dto.districtIdGHN}`, {
+          await (
+            await this.axiosInsService.axiosInstanceGHN()
+          ).get(`${process.env.URL_BASE_GHN}/master-data/ward?district_id=${dto.districtIdGHN}`, {
             headers: {
               TOKEN: process.env.TOKEN_GHN,
             },
