@@ -17,21 +17,6 @@ export const ServiceNhatTin = [
   },
 ];
 
-export const PaymentMethodNhatTin = [
-  {
-    name: 'Người gửi thanh toán ngay',
-    id: 10,
-  },
-  {
-    name: 'Người gửi thanh toán sau',
-    id: 11,
-  },
-  {
-    name: 'Người nhận thanh toán ngay',
-    id: 20,
-  },
-];
-
 export const TypeProductNhatTin = [
   {
     name: 'Chứng từ',

@@ -5,6 +5,7 @@ import { Injectable } from '@nestjs/common';
 import { GetFeeDto, GetFeeServiceFastDto, GetServiceAvailableDto } from './dto/create-fee.dto';
 import { ProvinceService } from '@modules/province/province.service';
 import { send } from 'process';
+import { ServiceNhatTin } from '@common/constants/nhattin.constant';
 
 @Injectable()
 export class FeeService {
@@ -18,7 +19,7 @@ export class FeeService {
       const axiosInstanceViettel = await this.axiosInsService.axiosInstanceViettel();
       const axiosInstanceGHN = await this.axiosInsService.axiosInstanceGHN();
       const serviceViettel = (
-        await axiosInstanceViettel.post(`/order/getPriceAll`, {
+        await axiosInstanceViettel.post(`/v2/order/getPriceAll`, {
           SENDER_PROVINCE: dto.senderProvince,
           SENDER_DISTRICT: dto.senderDistrict,
           RECEIVER_PROVINCE: dto.receiverProvince,
@@ -41,6 +42,7 @@ export class FeeService {
       return {
         viettel: serviceViettel,
         ghn: serviceGHN?.data,
+        nhattin: ServiceNhatTin.filter((i) => i.id != 81),
       };
     } catch (error) {
       console.log('🚀 ~ FeeService ~ getServiceAvailable ~ error:', error);
@@ -100,7 +102,7 @@ export class FeeService {
 
     const [feeViettel, feeGHN, leadTimeGHN, feeGHTK] = await Promise.all([
       //
-      (await this.axiosInsService.axiosInstanceViettel()).post(`/order/getPrice`, dataViettel),
+      (await this.axiosInsService.axiosInstanceViettel()).post(`/v2/order/getPrice`, dataViettel),
       (await this.axiosInsService.axiosInstanceGHN()).post(`/v2/shipping-order/fee`, dataGHN),
       (await this.axiosInsService.axiosInstanceGHN()).post(`/v2/shipping-order/leadtime`, dataLeadTime),
       (await this.axiosInsService.axiosInstanceGHTK()).get(`/services/shipment/fee`, { params: dataGHTK }),
@@ -190,7 +192,7 @@ export class FeeService {
     };
 
     const [resViettel, resLala, resSuperShip, resNhatTin] = await Promise.all([
-      (await this.axiosInsService.axiosInstanceViettel()).post(`/order/getPrice`, dataViettel),
+      (await this.axiosInsService.axiosInstanceViettel()).post(`/v2/order/getPrice`, dataViettel),
       (await this.axiosInsService.callApiLALAMOVE('POST', '/v3/quotations', { data: dataLALAMOVE }))?.data,
       (
         await (

@@ -1,7 +1,7 @@
 import { Warehouse } from '@entities/index';
 import { Injectable } from '@nestjs/common';
 import { BaseRepositoryAbstract } from 'src/base';
-import { WarehouseRepositoryInterface } from '../interface/warehouse.interface';
+import { WarehouseRepositoryInterface } from '../interface/index';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 @Injectable()

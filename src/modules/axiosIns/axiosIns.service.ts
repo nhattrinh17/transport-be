@@ -3,7 +3,7 @@ import RedisService from '@common/services/redis.service';
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import axios, { AxiosInstance } from 'axios';
-import { LalamoveUtils } from 'src/utils/lalamiove.utils';
+import { LalamoveUtils } from 'src/utils/lalamove.utils';
 
 @Injectable()
 export class AxiosInsService {
@@ -19,7 +19,7 @@ export class AxiosInsService {
       const dataRedis = await this.redisService.get(keyRedis);
       if (dataRedis) return dataRedis;
 
-      const res = await this.httpService.axiosRef.post(`${process.env.URL_BASE_VIETTEL}/user/Login`, {
+      const res = await this.httpService.axiosRef.post(`${process.env.URL_BASE_VIETTEL}/v2/user/Login`, {
         USERNAME: process.env.USERNAME_VIETTEL,
         PASSWORD: process.env.PASSWORD_VIETTEL,
       });
@@ -46,11 +46,12 @@ export class AxiosInsService {
     });
   }
 
-  async axiosInstanceGHN(): Promise<AxiosInstance> {
+  async axiosInstanceGHN(shop_id?: string): Promise<AxiosInstance> {
     return axios.create({
       baseURL: process.env.URL_BASE_GHN,
       headers: {
         token: process.env.TOKEN_GHN,
+        ShopId: shop_id,
       },
     });
   }

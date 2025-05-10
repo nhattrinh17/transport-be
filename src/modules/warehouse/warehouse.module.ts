@@ -20,5 +20,6 @@ import { AxiosInsModule } from '@modules/axiosIns/axiosIns.module';
       useClass: WarehouseDetailRepository,
     },
   ],
+  exports: [WarehouseService],
 })
 export class WarehouseModule {}

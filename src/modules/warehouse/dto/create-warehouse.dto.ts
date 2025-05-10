@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsNumber, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateWarehouseDto {
   @IsString()
@@ -42,6 +42,7 @@ export class CreateWarehouseDetailDto {
   warehouseId?: string;
 
   @IsString()
+  @IsOptional()
   @ApiProperty({ name: 'code', type: String, example: 'Mã kho(Mã shop) sẽ là lưu chung cho tất cả các đơn vị', description: 'Mã kho(Mã shop) sẽ là lưu chung cho tất cả các đơn vị' })
   code: string;
 
@@ -50,18 +51,22 @@ export class CreateWarehouseDetailDto {
   type: string;
 
   @IsString()
+  @IsOptional()
   @ApiProperty({ name: 'cusId', type: String, example: 'ID người tạo', description: 'ID khách hàng' })
   cusId?: string;
 
   @IsString()
+  @IsOptional()
   @ApiProperty({ name: 'provinceId', type: String, example: 'ID tỉnh thành phố', description: 'ID tỉnh thành phố' })
   provinceId?: string;
 
   @IsString()
+  @IsOptional()
   @ApiProperty({ name: 'districtId', type: String, example: 'ID quận huyện', description: 'ID quận huyện' })
   districtId?: string;
 
   @IsString()
+  @IsOptional()
   @ApiProperty({ name: 'wardId', type: String, example: 'ID phường xã', description: 'ID phường xã' })
   wardId?: string;
 }

@@ -20,7 +20,7 @@ export class ProvinceService {
     let providerGHN;
     const [providerViettelRedis, providerGHNRedis] = await Promise.all([this.redisService.get(keyViettel), this.redisService.get(keyGHN)]);
     if (!providerViettelRedis) {
-      providerViettel = (await (await this.axiosInsService.axiosInstanceViettel()).get(`${process.env.URL_BASE_VIETTEL}/categories/listProvinceById?provinceId=-1`)).data;
+      providerViettel = (await (await this.axiosInsService.axiosInstanceViettel()).get(`/v2/categories/listProvinceById?provinceId=-1`)).data;
       this.redisService.setExpire(keyViettel, JSON.stringify(providerViettel), ttl);
     } else {
       providerViettel = JSON.parse(providerViettelRedis);
@@ -55,7 +55,7 @@ export class ProvinceService {
       let districtGHN;
       const [districtViettelRedis, districtGHNRedis] = await Promise.all([this.redisService.get(keyViettel), this.redisService.get(keyGHN)]);
       if (!districtViettelRedis) {
-        districtViettel = (await (await this.axiosInsService.axiosInstanceViettel()).get(`${process.env.URL_BASE_VIETTEL}/categories/listDistrict?provinceId=${dto.provinceIdViettel}`)).data;
+        districtViettel = (await (await this.axiosInsService.axiosInstanceViettel()).get(`/v2/categories/listDistrict?provinceId=${dto.provinceIdViettel}`)).data;
         this.redisService.setExpire(keyViettel, JSON.stringify(districtViettel), ttl);
       } else {
         districtViettel = JSON.parse(districtViettelRedis);
@@ -93,7 +93,7 @@ export class ProvinceService {
       let wardsGHN;
       const [wardsViettelRedis, wardsGHNRedis] = await Promise.all([this.redisService.get(keyViettel), this.redisService.get(keyGHN)]);
       if (!wardsViettelRedis) {
-        wardsViettel = (await (await this.axiosInsService.axiosInstanceViettel()).get(`${process.env.URL_BASE_VIETTEL}/categories/listWards?districtId=${dto.districtIdViettel}`)).data;
+        wardsViettel = (await (await this.axiosInsService.axiosInstanceViettel()).get(`/v2/categories/listWards?districtId=${dto.districtIdViettel}`)).data;
         this.redisService.setExpire(keyViettel, JSON.stringify(wardsViettel), ttl);
       } else {
         wardsViettel = JSON.parse(wardsViettelRedis);

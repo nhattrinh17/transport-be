@@ -7,6 +7,7 @@ import connectionSource, { typeOrmConfig } from './config/typeorm';
 import { ProvinceModule } from '@modules/province/province.module';
 import { FeeModule } from '@modules/fee/fee.module';
 import { WarehouseModule } from '@modules/warehouse/warehouse.module';
+import { OrderModule } from '@modules/order/order.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { WarehouseModule } from '@modules/warehouse/warehouse.module';
     ProvinceModule,
     FeeModule,
     WarehouseModule,
+    OrderModule,
   ],
   controllers: [AppController],
   providers: [AppService],

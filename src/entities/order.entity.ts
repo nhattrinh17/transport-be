@@ -1,13 +1,17 @@
 import { Entity, Column, OneToOne, Index, Unique } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { OrderDetail } from './order-detail.entity';
+import { ConfigReceiveOrder, PaymentMethodOrder } from '@common/enums';
 
 @Entity('order')
-@Unique(['code', 'type'])
+@Unique(['code', 'unit'])
 export class Order extends BaseEntity {
   @Index()
   @Column()
   code: string;
+
+  @Column()
+  unit: string;
 
   @Index()
   @Column()
@@ -22,33 +26,51 @@ export class Order extends BaseEntity {
   @Column({ nullable: true })
   soc: string;
 
+  @Column({
+    type: 'enum',
+    enum: ConfigReceiveOrder,
+  })
+  configReceive: ConfigReceiveOrder;
+
+  @Column({
+    type: 'enum',
+    enum: PaymentMethodOrder,
+  })
+  paymentMethod: PaymentMethodOrder;
+
+  @Column({ nullable: true })
+  senderAddress: string;
+
   @Column()
-  note: string;
+  senderPhone: string;
+
+  @Column()
+  name: string;
 
   @Column({ nullable: true })
   address: string;
 
   @Column()
-  phoneReceiver: string;
+  phone: string;
 
-  @Column({ default: false })
-  isPODEnabled: boolean;
-
-  @Column({ nullable: true })
-  shareLink: string;
-
-  @Column()
+  @Column({ default: 0 })
   collection: number;
 
   @Column({ default: 0 })
   value: number;
 
+  @Column({ default: 0 })
+  totalFee: number;
+
   @Column()
   status: string;
 
   @Column({ type: 'datetime', nullable: true })
-  estimatedDeliveryTime: Date;
+  estimatedDeliveryTime?: Date;
 
-  @OneToOne(() => OrderDetail, (detail) => detail.order, { cascade: true })
-  detail: OrderDetail;
+  @OneToOne(() => OrderDetail, (detail) => detail.order, {
+    cascade: true,
+    eager: true,
+  })
+  detail?: OrderDetail;
 }

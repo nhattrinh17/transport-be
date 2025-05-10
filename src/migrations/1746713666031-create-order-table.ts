@@ -1,3 +1,4 @@
+import { ConfigReceiveOrder, PaymentMethodOrder } from '@common/enums';
 import { MigrationInterface, QueryRunner, Table, TableForeignKey, TableIndex } from 'typeorm';
 
 export class CreateOrderTable1746713666031 implements MigrationInterface {
@@ -19,10 +20,15 @@ export class CreateOrderTable1746713666031 implements MigrationInterface {
             comment: 'Mã đơn hàng',
           },
           {
-            name: 'type',
+            name: 'unit',
             type: 'varchar',
             isNullable: false,
-            comment: 'Loại đơn vị vận chuyển',
+            comment: 'đơn vị vận chuyển',
+          },
+          {
+            name: 'type',
+            type: 'varchar',
+            comment: 'Hình thức vận chuyển',
           },
           {
             name: 'sorting',
@@ -43,9 +49,32 @@ export class CreateOrderTable1746713666031 implements MigrationInterface {
             comment: 'Mã đơn hàng người gửi',
           },
           {
-            name: 'note',
+            name: 'configReceive',
+            type: 'enum',
+            enum: [...Object.values(ConfigReceiveOrder)],
+            comment: 'Cách thức nhận hàng',
+          },
+          {
+            name: 'paymentMethod',
+            type: 'enum',
+            enum: [...Object.values(PaymentMethodOrder)],
+            comment: 'Hình thức thanh toán',
+          },
+          {
+            name: 'senderAddress',
             type: 'varchar',
-            comment: 'Yêu cầu đi kèm',
+            isNullable: true,
+            comment: 'Địa chỉ người gửi',
+          },
+          {
+            name: 'senderPhone',
+            type: 'varchar',
+            comment: 'Số điện thoại người gửi',
+          },
+          {
+            name: 'name',
+            type: 'varchar',
+            comment: 'Tên người nhận',
           },
           {
             name: 'address',
@@ -54,32 +83,26 @@ export class CreateOrderTable1746713666031 implements MigrationInterface {
             comment: 'Địa chỉ người nhận',
           },
           {
-            name: 'phoneReceiver',
+            name: 'phone',
             type: 'varchar',
             comment: 'Số điện thoại người nhận',
-          },
-          {
-            name: 'isPODEnabled',
-            type: 'bool',
-            default: false,
-            comment: 'Yêu cầu bằng chứng giao',
-          },
-          {
-            name: 'shareLink',
-            type: 'varchar',
-            isNullable: true,
-            comment: 'Link chia sẻ đơn hàng',
           },
           {
             name: 'collection',
             type: 'int',
             comment: 'Số tiền thu hộ',
+            default: 0,
           },
           {
             name: 'value',
             type: 'int',
             default: 0,
             comment: 'Giá trị đơn',
+          },
+          {
+            name: 'totalFee',
+            type: 'int',
+            comment: 'Tổng phí đơn hàng',
           },
           {
             name: 'status',
@@ -106,8 +129,8 @@ export class CreateOrderTable1746713666031 implements MigrationInterface {
         ],
         uniques: [
           {
-            name: 'UQ_order_code_type',
-            columnNames: ['code', 'type'],
+            name: 'UQ_order_code_unit',
+            columnNames: ['code', 'unit'],
           },
         ],
       }),
@@ -126,6 +149,24 @@ export class CreateOrderTable1746713666031 implements MigrationInterface {
           {
             name: 'orderId',
             type: 'varchar(36)',
+          },
+          {
+            name: 'note',
+            type: 'varchar',
+            comment: 'Yêu cầu đi kèm',
+            isNullable: true,
+          },
+          {
+            name: 'isPODEnabled',
+            type: 'bool',
+            default: false,
+            comment: 'Yêu cầu bằng chứng giao',
+          },
+          {
+            name: 'shareLink',
+            type: 'varchar',
+            isNullable: true,
+            comment: 'Link chia sẻ đơn hàng',
           },
           {
             name: 'weight',
@@ -174,11 +215,6 @@ export class CreateOrderTable1746713666031 implements MigrationInterface {
             type: 'int',
             default: 0,
             comment: 'Phí hoàn',
-          },
-          {
-            name: 'totalFee',
-            type: 'int',
-            comment: 'Tổng phí đơn hàng',
           },
         ],
       }),

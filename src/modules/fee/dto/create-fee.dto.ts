@@ -5,7 +5,7 @@ import { IsArray, IsBoolean, IsEnum, IsNumber, IsNumberString, IsObject, IsOptio
 
 export class CreateFeeDto {}
 
-class ItemProduct {
+export class ItemProductDto {
   @IsString()
   @ApiProperty({ name: 'name', type: String, description: 'Tên sp' })
   name: string;
@@ -18,27 +18,33 @@ class ItemProduct {
   @IsNumber()
   @Transform(({ value }) => Number(value))
   @ApiProperty({ name: 'quantity', type: Number, description: 'Số lượng sp' })
-  quantity: string;
+  quantity: number;
 
   @IsNumber()
   @Transform(({ value }) => Number(value))
   @ApiProperty({ name: 'weight', type: Number, description: 'Khối lượng sp' })
-  weight: string;
+  weight: number;
 
   @IsNumber()
   @Transform(({ value }) => Number(value))
   @ApiProperty({ name: 'length', type: Number, description: 'Chiều dài sp' })
-  length: string;
+  length: number;
 
   @IsNumber()
   @Transform(({ value }) => Number(value))
   @ApiProperty({ name: 'width', type: Number, description: 'Chiều rộng sp' })
-  width: string;
+  width: number;
 
   @IsNumber()
   @Transform(({ value }) => Number(value))
   @ApiProperty({ name: 'height', type: Number, description: 'Chiều cao sp' })
-  height: string;
+  height: number;
+
+  @IsNumber()
+  @IsOptional()
+  @Transform(({ value }) => Number(value))
+  @ApiProperty({ name: 'price', description: 'Giá trị sản phẩm', example: 1000 })
+  price: number;
 }
 
 class ItemProductFast {
@@ -220,8 +226,8 @@ export class GetFeeDto {
   moneyCollection: number;
 
   @IsArray()
-  @ApiProperty({ name: 'items', type: [ItemProduct], description: 'Danh sách sản phẩm' })
-  items: ItemProduct[];
+  @ApiProperty({ name: 'items', type: [ItemProductDto], description: 'Danh sách sản phẩm' })
+  items: ItemProductDto[];
 }
 
 export class GetFeeServiceFastDto {
