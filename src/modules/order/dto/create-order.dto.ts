@@ -2,7 +2,7 @@ import { ConfigReceiveOrder, PaymentMethodOrder } from '@common/enums';
 import { ItemProductDto } from '@modules/fee/dto/create-fee.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsArray, IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsEnum, IsNumber, IsOptional, IsPhoneNumber, IsString } from 'class-validator';
 
 export class CreateOrderDto {
   @IsString()
@@ -12,11 +12,6 @@ export class CreateOrderDto {
   @IsString()
   @ApiProperty({ name: 'type', description: 'Hình thức vận chuyển', example: 'COD' })
   type: 'HT' | 'NORMAL';
-
-  @IsString()
-  @IsOptional()
-  @ApiProperty({ name: 'customerId', description: 'Id Khách hàng', example: 'VTP123456' })
-  customerId: string;
 
   @IsString()
   @IsOptional()
@@ -33,6 +28,7 @@ export class CreateOrderDto {
   senderName: string;
 
   @IsString()
+  @IsPhoneNumber('VN')
   @ApiProperty({ name: 'senderPhone', description: 'Số điện thoại người gửi', example: 'COD' })
   senderPhone: string;
 
@@ -57,6 +53,7 @@ export class CreateOrderDto {
   receiverName: string;
 
   @IsString()
+  @IsPhoneNumber('VN')
   @ApiProperty({ name: 'receiverPhone', description: 'Số điện thoại người nhận', example: '098868764' })
   receiverPhone: string;
 

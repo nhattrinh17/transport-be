@@ -1,4 +1,4 @@
-import { Warehouse, WarehouseDetail } from '@entities/index';
+import { Order, OrderDetail, Warehouse, WarehouseDetail } from '@entities/index';
 import { join } from 'path';
 import { DataSource, DataSourceOptions } from 'typeorm';
 
@@ -25,7 +25,7 @@ export const typeOrmConfig: DataSourceOptions = {
       },
     ],
   },
-  entities: [Warehouse, WarehouseDetail],
+  entities: [Warehouse, WarehouseDetail, Order, OrderDetail],
   migrations: [join(__dirname, '../migrations/*{.ts,.js}')],
   synchronize: false,
   migrationsRun: process.env.MIGRATIONS_RUN as any,

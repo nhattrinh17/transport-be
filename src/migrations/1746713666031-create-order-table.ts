@@ -216,6 +216,17 @@ export class CreateOrderTable1746713666031 implements MigrationInterface {
             default: 0,
             comment: 'Phí hoàn',
           },
+          {
+            name: 'createdAt',
+            type: 'datetime(6)',
+            default: 'CURRENT_TIMESTAMP(6)',
+          },
+          {
+            name: 'updatedAt',
+            type: 'datetime(6)',
+            default: 'CURRENT_TIMESTAMP(6)',
+            onUpdate: 'CURRENT_TIMESTAMP(6)',
+          },
         ],
       }),
     );

@@ -28,12 +28,14 @@ export class OrderService {
         else return '2';
       case OrderUnitConstant.VIETTEL:
         switch (paymentMethod) {
-          case PaymentMethodOrder.RECEIVER_PAY_FEE:
-          case PaymentMethodOrder.RECEIVER_PAY_ALL:
-            return 0;
           case PaymentMethodOrder.SENDER:
-          case PaymentMethodOrder.RECEIVER_PAY_PRODUCT:
             return 1;
+          case PaymentMethodOrder.RECEIVER_PAY_ALL:
+            return 2;
+          case PaymentMethodOrder.RECEIVER_PAY_PRODUCT:
+            return 3;
+          case PaymentMethodOrder.RECEIVER_PAY_FEE:
+            return 4;
           default:
             break;
         }
@@ -192,6 +194,7 @@ export class OrderService {
       configReceive,
       products,
     } = dto;
+
     const orderCodeClient = generateOrderCode(type);
     const data = {
       ORDER_NUMBER: orderCodeClient,
@@ -202,20 +205,16 @@ export class OrderService {
       SENDER_ADDRESS: senderAddress,
       SENDER_PHONE: senderPhone,
       SENDER_EMAIL: '',
-      SENDER_WARD: +senderWard,
-      SENDER_DISTRICT: +senderDistrict,
-      SENDER_PROVINCE: +senderProvince,
-      SENDER_LATITUDE: 0,
-      SENDER_LONGITUDE: 0,
+      SENDER_WARD: Number(senderWard),
+      SENDER_DISTRICT: Number(senderDistrict),
+      SENDER_PROVINCE: Number(senderProvince),
       RECEIVER_FULLNAME: receiverName,
       RECEIVER_ADDRESS: receiverAddress,
       RECEIVER_PHONE: receiverPhone,
       RECEIVER_EMAIL: '',
-      RECEIVER_WARD: receiverWard,
-      RECEIVER_DISTRICT: receiverDistrict,
-      RECEIVER_PROVINCE: receiverProvince,
-      RECEIVER_LATITUDE: 0,
-      RECEIVER_LONGITUDE: 0,
+      RECEIVER_WARD: Number(receiverWard),
+      RECEIVER_DISTRICT: Number(receiverDistrict),
+      RECEIVER_PROVINCE: Number(receiverProvince),
       PRODUCT_NAME: products?.length > 1 ? 'Nhiều sản phẩm' : products[0].name,
       PRODUCT_DESCRIPTION: products?.length > 1 ? 'Nhiều sản phẩm' : products[0].name,
       PRODUCT_QUANTITY: products.reduce((acc, item) => acc + item.quantity, 0),
@@ -245,7 +244,8 @@ export class OrderService {
     };
     console.log('🚀 ~ OrderService ~ handleCreateDataViettel ~ data:', JSON.stringify(data));
     const resViettel = (await (await this.axiosInsService.axiosInstanceViettel()).post('/v2/order/createOrder', data)).data;
-    if (resViettel.status == 'Success') {
+    console.log('🚀 ~ OrderService ~ handleCreateDataViettel ~ resViettel:', resViettel);
+    if (!resViettel.error) {
       const { ORDER_NUMBER, MONEY_OTHER_FEE, MONEY_TOTALFEE, MONEY_FEE, MONEY_COLLECTION_FEE, MONEY_FEE_VAT, EXCHANGE_WEIGHT, MONEY_TOTAL } = resViettel.data;
       return {
         order: {
