@@ -110,14 +110,15 @@ export class OrderService {
       note,
       products,
     } = dto;
+    if (dto.type == 'NORMAL') throw new Error(messageResponseError.order.ship_method_not_supported);
     const payer = this.handleGetPaymentMethod(unit, paymentMethod);
     const configReceiveOrder = this.handleGetConfigReceive(unit, configReceive);
     const data = {
       pickup_phone: senderPhone,
       pickup_address: senderAddress,
-      pickup_commune: senderWard,
-      pickup_district: senderDistrict,
       pickup_province: senderProvince,
+      pickup_district: senderDistrict,
+      pickup_commune: senderWard,
       name: receiverName,
       phone: receiverPhone,
       address: receiverAddress,
@@ -128,7 +129,7 @@ export class OrderService {
       value: value,
       weight: weight,
       payer,
-      service: 1,
+      service: '1',
       config: configReceiveOrder,
       soc: generateOrderCode(type),
       note: note,
@@ -137,6 +138,7 @@ export class OrderService {
     };
 
     const resSuperShip = (await (await this.axiosInsService.axiosInstanceSuperShip()).post('/v1/partner/orders/add', data)).data;
+    console.log('🚀 ~ OrderService ~ handleCreateDataSuperShip ~ resSuperShip:', resSuperShip);
     if (resSuperShip.status == 'Success') {
       const { code, sorting, shortcode, soc, fee, insurance, weight } = resSuperShip.results;
       return {
@@ -162,7 +164,7 @@ export class OrderService {
         detail: { note, isPODEnabled: false, shareLink: '', weight, mainFee: fee, otherFee: insurance, surcharge: 0, collectionFee: 0, vat: 0, r2sFee: 0, returnFee: 0 },
       };
     } else {
-      throw new Error(messageResponseError.order.create_order_supership_error);
+      throw new Error(resSuperShip?.message || messageResponseError.order.create_order_supership_error);
     }
   }
 
@@ -194,12 +196,9 @@ export class OrderService {
       configReceive,
       products,
     } = dto;
-
     const orderCodeClient = generateOrderCode(type);
     const data = {
       ORDER_NUMBER: orderCodeClient,
-      GROUPADDRESS_ID: '',
-      CUS_ID: '',
       DELIVERY_DATE: moment(new Date()).tz('Asia/Ho_Chi_Minh').format('DD/MM/YYYY HH:mm:ss'),
       SENDER_FULLNAME: senderName,
       SENDER_ADDRESS: senderAddress,
@@ -242,9 +241,7 @@ export class OrderService {
         return { PRODUCT_NAME: item.name, PRODUCT_PRICE: item.price, PRODUCT_WEIGHT: item.weight, PRODUCT_QUANTITY: item.quantity };
       }),
     };
-    console.log('🚀 ~ OrderService ~ handleCreateDataViettel ~ data:', JSON.stringify(data));
     const resViettel = (await (await this.axiosInsService.axiosInstanceViettel()).post('/v2/order/createOrder', data)).data;
-    console.log('🚀 ~ OrderService ~ handleCreateDataViettel ~ resViettel:', resViettel);
     if (!resViettel.error) {
       const { ORDER_NUMBER, MONEY_OTHER_FEE, MONEY_TOTALFEE, MONEY_FEE, MONEY_COLLECTION_FEE, MONEY_FEE_VAT, EXCHANGE_WEIGHT, MONEY_TOTAL } = resViettel.data;
       return {
@@ -278,7 +275,6 @@ export class OrderService {
     const {
       unit,
       type,
-      serviceId,
       senderName,
       senderPhone,
       senderAddress,
@@ -302,6 +298,7 @@ export class OrderService {
       configReceive,
       products,
     } = dto;
+    if (type != 'NORMAL') throw new Error(messageResponseError.order.ship_method_not_supported);
     const orderCodeClient = generateOrderCode(type);
     const data = {
       payment_type_id: this.handleGetPaymentMethod(unit, paymentMethod),
@@ -329,38 +326,41 @@ export class OrderService {
       cod_failed_amount: 0,
       // "pick_station_id": 1444,
       insurance_value: value,
-      service_type_id: +serviceId,
+      service_type_id: products.reduce((acc, item) => acc + item.weight, 0) > 20000 ? 5 : 2,
       coupon: null,
       items: products,
     };
 
-    const resGHN = (await (await this.axiosInsService.axiosInstanceGHN()).post('/v2/shipping-order/create', data)).data;
-    if (resGHN.message == 'OK') {
-      const { sort_code, order_code, fee, total_fee } = resGHN.data;
-      return {
-        order: {
-          code: order_code,
-          unit,
-          type: type,
-          sorting: '',
-          shortcode: sort_code,
-          soc: orderCodeClient,
-          configReceive,
-          paymentMethod,
-          senderAddress,
-          senderPhone,
-          name: receiverName,
-          address: receiverAddress,
-          phone: receiverPhone,
-          collection,
-          value,
-          totalFee: total_fee,
-          status: 'Chờ lấy hàng',
-        },
-        detail: { note, isPODEnabled: false, shareLink: '', weight, mainFee: fee?.main_service, otherFee: fee?.station_do + fee?.station_pu, surcharge: 0, collectionFee: 0, vat: 0, r2sFee: fee?.r2s, returnFee: fee?.return },
-      };
-    } else {
-      throw new Error(messageResponseError.order.create_order_ghn_error);
+    try {
+      const resGHN = (await (await this.axiosInsService.axiosInstanceGHN()).post('/v2/shipping-order/create', data)).data;
+      if (resGHN.message == 'Success') {
+        const { sort_code, order_code, fee, total_fee, expected_delivery_time } = resGHN.data;
+        return {
+          order: {
+            code: order_code,
+            unit,
+            type: type,
+            sorting: '',
+            shortcode: sort_code,
+            soc: orderCodeClient,
+            configReceive,
+            paymentMethod,
+            senderAddress,
+            senderPhone,
+            name: receiverName,
+            address: receiverAddress,
+            phone: receiverPhone,
+            collection,
+            value,
+            totalFee: total_fee,
+            status: 'Chờ lấy hàng',
+            estimatedDeliveryTime: expected_delivery_time,
+          },
+          detail: { note, isPODEnabled: false, shareLink: '', weight, mainFee: fee?.main_service, otherFee: fee?.station_do + fee?.station_pu, surcharge: 0, collectionFee: 0, vat: 0, r2sFee: fee?.r2s, returnFee: fee?.return },
+        };
+      }
+    } catch (error) {
+      throw new Error(error?.response?.data?.code_message || messageResponseError.order.create_order_ghn_error);
     }
   }
 
@@ -388,6 +388,7 @@ export class OrderService {
       configReceive,
       products,
     } = dto;
+    if (type != 'NORMAL') throw new Error(messageResponseError.order.ship_method_not_supported);
     const orderCodeClient = generateOrderCode(type);
     const data = {
       order: {
@@ -421,33 +422,41 @@ export class OrderService {
       }),
     };
 
-    const resGHTK = (await (await this.axiosInsService.axiosInstanceGHTK()).post('/services/shipment/order', data)).data;
-    if (resGHTK.success) {
-      const { tracking_id, fee, insurance_fee } = resGHTK.order;
-      return {
-        order: {
-          code: tracking_id,
-          unit,
-          type,
-          sorting: '',
-          shortcode: '',
-          soc: orderCodeClient,
-          configReceive,
-          paymentMethod,
-          senderAddress,
-          senderPhone,
-          name: receiverName,
-          address: receiverAddress,
-          phone: receiverPhone,
-          collection,
-          value,
-          totalFee: fee + insurance_fee,
-          status: 'Đã tiếp nhận',
-        },
-        detail: { note, isPODEnabled: false, shareLink: '', weight, mainFee: fee, otherFee: 0, surcharge: insurance_fee, collectionFee: 0, vat: 0, r2sFee: 0, returnFee: 0 },
-      };
-    } else {
-      throw new Error(messageResponseError.order.create_order_ghn_error);
+    try {
+      const resGHTK = (await (await this.axiosInsService.axiosInstanceGHTK()).post('/services/shipment/order', data)).data;
+      if (resGHTK.success) {
+        const { tracking_id, fee, insurance_fee, estimated_deliver_time } = resGHTK.order;
+        return {
+          order: {
+            code: tracking_id,
+            unit,
+            type,
+            sorting: '',
+            shortcode: '',
+            soc: orderCodeClient,
+            configReceive,
+            paymentMethod,
+            senderAddress,
+            senderPhone,
+            name: receiverName,
+            address: receiverAddress,
+            phone: receiverPhone,
+            collection,
+            value,
+            totalFee: fee + insurance_fee,
+            status: 'Đã tiếp nhận',
+            estimatedDeliveryTime:
+              estimated_deliver_time?.split('')[0] == 'Chiều'
+                ? moment(estimated_deliver_time?.split('')[1]).tz('Asia/Ho_Chi_Minh').format('DD/MM/YYYY 9:00:00')
+                : moment(estimated_deliver_time?.split('')[1]).tz('Asia/Ho_Chi_Minh').format('DD/MM/YYYY 14:00:00'),
+          },
+          detail: { note, isPODEnabled: false, shareLink: '', weight, mainFee: fee, otherFee: 0, surcharge: insurance_fee, collectionFee: 0, vat: 0, r2sFee: 0, returnFee: 0 },
+        };
+      } else {
+        throw new Error(messageResponseError.order.create_order_ghtk_error);
+      }
+    } catch (error) {
+      throw new Error(error?.response?.data?.code_message || messageResponseError.order.create_order_ghtk_error);
     }
   }
 
@@ -482,11 +491,11 @@ export class OrderService {
     const data = {
       partner_id: process.env.PARTNER_NHATTIN,
       ref_code: orderCodeClient,
-      weight,
+      weight: weight / 1000,
       width,
       length,
       height,
-      service_id: serviceId,
+      service_id: Number(serviceId),
       payment_method_id: this.handleGetPaymentMethod(unit, paymentMethod),
       cod_amount: collection,
       cargo_value: value,
@@ -511,11 +520,11 @@ export class OrderService {
       const { bill_id, bill_code, total_fee, main_fee, expected_at, cod_fee, insurr_fee, lifting_fee, remote_fee, counting_fee, packing_fee, status_id } = resNhatTin.data;
       return {
         order: {
-          code: bill_id,
+          code: bill_code,
           unit,
           type,
           sorting: '',
-          shortcode: bill_code,
+          shortcode: bill_id,
           soc: orderCodeClient,
           configReceive,
           paymentMethod,
@@ -530,7 +539,7 @@ export class OrderService {
           status: StatusOrderNhatTin.find((item) => item.id == status_id)?.name,
           estimatedDeliveryTime: expected_at,
         },
-        detail: { note, isPODEnabled: false, shareLink: '', weight, mainFee: main_fee, otherFee: insurr_fee + lifting_fee + counting_fee + packing_fee, surcharge: remote_fee, collectionFee: cod_fee, vat: 0, r2sFee: 0, returnFee: NaN },
+        detail: { note, isPODEnabled: false, shareLink: '', weight, mainFee: main_fee, otherFee: insurr_fee + lifting_fee + counting_fee + packing_fee, surcharge: remote_fee, collectionFee: cod_fee, vat: 0, r2sFee: 0, returnFee: 0 },
       };
     } else {
       throw new Error(messageResponseError.order.create_order_ghn_error);
@@ -539,6 +548,7 @@ export class OrderService {
 
   async handleCreateDataLalamove(dto: CreateOrderDto) {
     const { quotationId, senderName, senderPhone, senderAddress, receiverAddress, receiverName, receiverPhone, unit, type } = dto;
+    if (type != 'HT') throw new Error(messageResponseError.order.ship_method_not_supported);
     const orderCodeClient = generateOrderCode(type);
     if (!quotationId) throw new Error(messageResponseError.order.missing_quotation_id);
     const data = {
@@ -586,16 +596,16 @@ export class OrderService {
           isPODEnabled: true,
           shareLink,
           mainFee: priceBreakdown?.base,
-          otherFee: +priceBreakdown?.extraMileage + +priceBreakdown?.priorityFee,
+          otherFee: (+priceBreakdown?.extraMileage || 0) + (+priceBreakdown?.priorityFee || 0),
           surcharge: priceBreakdown?.surcharge,
           collectionFee: 0,
           vat: 0,
           r2sFee: 0,
-          returnFee: NaN,
+          returnFee: 0,
         },
       };
     } else {
-      throw new Error(messageResponseError.order.create_order_ghn_error);
+      throw new Error(messageResponseError.order.create_order_lalamove_error);
     }
   }
 
@@ -639,6 +649,41 @@ export class OrderService {
     }
   }
 
+  async printOrder(id: string, size: string, original: string) {
+    try {
+      const order = await this.orderRepository.findOneById(id, ['unit', 'code', 'id']);
+      if (!order) throw new Error(messageResponseError.order.order_not_found);
+      switch (order.unit) {
+        case OrderUnitConstant.VIETTEL:
+          throw new Error(messageResponseError.order.viettel_unSupported_print_order);
+        case OrderUnitConstant.GHN:
+          const resToken = (
+            await (
+              await this.axiosInsService.axiosInstanceGHN()
+            ).post('/v2/a5/gen-token', {
+              order_codes: [order.code],
+            })
+          ).data;
+          return {
+            data: `https://online-gateway.ghn.vn/a5/public-api/print${size || 'A5'}?token=${resToken?.data?.token}`,
+          };
+        case OrderUnitConstant.GHTK:
+          const resGHTK = (await (await this.axiosInsService.axiosInstanceGHTK()).get(`/services/label/${order.code}?original=${original || 'portrait'}&paper_size=${size || 'A6'}`)).data;
+          return {
+            data: resGHTK?.data,
+          };
+        case OrderUnitConstant.NT:
+          return {
+            data: `${process.env.URL_BASE_PRINT_NHATTIN}/v1/bill/print?do_code=${order.code}&partner_id=${process.env.PARTNER_NHATTIN}`,
+          };
+        default:
+          break;
+      }
+    } catch (error) {
+      throw new Error(messageResponseError.order.cannot_print_order);
+    }
+  }
+
   findAll() {
     return `This action returns all order`;
   }
@@ -651,7 +696,77 @@ export class OrderService {
     return `This action updates a #${id} order`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} order`;
+  async remove(id: string) {
+    try {
+      const order = await this.orderRepository.findOneById(id, ['unit', 'code', 'id']);
+      if (!order) throw new Error(messageResponseError.order.order_not_found);
+      let isRemove = false;
+      switch (order.unit) {
+        case OrderUnitConstant.VIETTEL:
+          const removeOrderViettel = (
+            await (
+              await this.axiosInsService.axiosInstanceViettel()
+            ).post('/v2/order/UpdateOrder', {
+              TYPE: 4,
+              ORDER_NUMBER: order.code,
+              NOTE: 'Hủy đơn hàng',
+            })
+          ).data;
+          if (!removeOrderViettel.error) {
+            // Delete order in viettel post
+            (await this.axiosInsService.axiosInstanceViettel()).post('/v2/order/UpdateOrder', {
+              TYPE: 11,
+              ORDER_NUMBER: order.code,
+              NOTE: 'Xóa đơn hàng',
+            });
+            // Delete order in database
+            isRemove = true;
+          }
+          break;
+
+        case OrderUnitConstant.GHN:
+          const removeOrderGHN = (await (await this.axiosInsService.axiosInstanceGHN()).post('/v2/switch-status/cancel', { order_code: ['5E3NK3RS'] })).data;
+          if (removeOrderGHN.message == 'Success') {
+            isRemove = true;
+          }
+          break;
+        case OrderUnitConstant.GHTK:
+          const removeOrder = (await (await this.axiosInsService.axiosInstanceGHTK()).post(`/services/shipment/cancel/${order.code}`)).data;
+          if (removeOrder.success) {
+            isRemove = true;
+          } else {
+            throw new Error(messageResponseError.order.delete_order_ghtk_error);
+          }
+        case OrderUnitConstant.NT:
+          const removeOrderNhatTin = (await (await this.axiosInsService.axiosInstanceNhatTin()).post('v1/bill/destroy', { bill_code: [order.code] })).data;
+          if (removeOrderNhatTin.success) {
+            isRemove = true;
+          }
+        case OrderUnitConstant.LALAMOVE:
+          try {
+            const removeOrderLalamove = (await this.axiosInsService.callApiLALAMOVE('DELETE', `/v3/orders/${order.code}`)).data;
+            isRemove = true;
+          } catch (error) {
+            throw new Error(messageResponseError.order.delete_order_lalamove_error);
+          }
+
+        default:
+          break;
+      }
+      if (isRemove) {
+        const deleteDetail = await this.orderDetailRepository.permanentlyDeleteByCondition({
+          orderId: id,
+        });
+        deleteDetail &&
+          (await this.orderRepository.permanentlyDeleteByCondition({
+            id,
+          }));
+        return { message: 'Hủy đơn hàng thành công' };
+      } else {
+        throw new Error(messageResponseError.order.order_not_found);
+      }
+    } catch (error) {
+      throw new Error(error?.response?.data?.message || error.message);
+    }
   }
 }

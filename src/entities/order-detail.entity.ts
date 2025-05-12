@@ -5,6 +5,7 @@ import { Order } from './order.entity';
 @Entity('order_detail')
 export class OrderDetail extends BaseEntity {
   @OneToOne(() => Order, (order) => order.detail, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'orderId' })
   order: Order;
 
   @Column({ type: 'varchar', length: 36 })
@@ -42,7 +43,4 @@ export class OrderDetail extends BaseEntity {
 
   @Column({ default: 0 })
   returnFee: number;
-
-  @Column()
-  totalFee: number;
 }

@@ -12,7 +12,7 @@ export class LalamoveUtils {
     const time = new Date().getTime().toString();
     const body = JSON.stringify(dataBody || {});
 
-    const rawSignature = dataBody ? `${time}\r\n${method}\r\n/v3/quotations\r\n\r\n${body}` : `${time}\r\n${method}\r\n${path}\r\n\r\n`;
+    const rawSignature = dataBody ? `${time}\r\n${method}\r\n${path}\r\n\r\n${body}` : `${time}\r\n${method}\r\n${path}\r\n\r\n`;
     const signature = HmacSHA256(rawSignature, this.SECRET).toString();
     return {
       signature,

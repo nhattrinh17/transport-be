@@ -1,8 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, BadRequestException, Query } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { ApiOperationCustom } from 'src/custom-decorator';
 
 @ApiTags('Order')
@@ -12,8 +12,34 @@ export class OrderController {
 
   @Post()
   @ApiOperationCustom('Order', 'POST', 'Tạo đơn hàng')
-  create(@Body() createOrderDto: CreateOrderDto) {
-    return this.orderService.create(createOrderDto);
+  async create(@Body() createOrderDto: CreateOrderDto) {
+    try {
+      return await this.orderService.create(createOrderDto);
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  @Get(':id/print')
+  @ApiQuery({ name: 'size', required: false, type: String })
+  @ApiQuery({ name: 'original', required: false, type: String })
+  @ApiOperationCustom('Order', 'Get', 'In đơn hàng')
+  async printOrder(@Param('id') id: string, @Query('size') size: string, @Query('original') original: string) {
+    try {
+      return await this.orderService.printOrder(id, size, original);
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  @Delete(':id')
+  @ApiOperationCustom('Order', 'Delete', 'Xóa đơn hàng')
+  async remove(@Param('id') id: string) {
+    try {
+      return await this.orderService.remove(id);
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 
   // @Get()

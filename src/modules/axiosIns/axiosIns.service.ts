@@ -43,6 +43,7 @@ export class AxiosInsService {
       headers: {
         Token: tokenViettel,
       },
+      validateStatus: (status) => status < 500,
     });
   }
 
@@ -53,6 +54,7 @@ export class AxiosInsService {
         token: process.env.TOKEN_GHN,
         ShopId: shop_id,
       },
+      validateStatus: (status) => status < 500,
     });
   }
 
@@ -63,6 +65,7 @@ export class AxiosInsService {
         Token: process.env.TOKEN_GHTK,
         'X-Client-Source': process.env.PARTNER_CODE,
       },
+      validateStatus: (status) => status < 500,
     });
   }
 
@@ -92,12 +95,18 @@ export class AxiosInsService {
       headers: {
         Authorization: `Bearer ${process.env.TOKEN_SUPERSHIP}`,
       },
+      validateStatus: (status) => status < 500,
     });
   }
 
   async axiosInstanceNhatTin(): Promise<AxiosInstance> {
     return axios.create({
       baseURL: process.env.URL_BASE_NHATTIN,
+      headers: {
+        username: process.env.USERNAME_NHATTIN,
+        password: process.env.PASSWORD_NHATTIN,
+      },
+      validateStatus: (status) => status < 500,
     });
   }
 }

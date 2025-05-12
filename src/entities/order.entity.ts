@@ -70,7 +70,6 @@ export class Order extends BaseEntity {
 
   @OneToOne(() => OrderDetail, (detail) => detail.order, {
     cascade: true,
-    eager: true,
   })
   detail?: OrderDetail;
 }
