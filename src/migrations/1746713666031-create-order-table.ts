@@ -116,6 +116,12 @@ export class CreateOrderTable1746713666031 implements MigrationInterface {
             comment: 'Thời gian giao hàng dự kiến',
           },
           {
+            name: 'estimatedDeliveryStr',
+            type: 'varchar',
+            isNullable: true,
+            comment: 'Thời gian giao hàng dự kiến thành văn',
+          },
+          {
             name: 'createdAt',
             type: 'datetime(6)',
             default: 'CURRENT_TIMESTAMP(6)',

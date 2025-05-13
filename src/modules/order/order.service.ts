@@ -6,7 +6,7 @@ import { OrderUnitConstant } from '@common/constants/order.constant';
 import { ConfigReceiveOrder, PaymentMethodOrder } from '@common/enums';
 import { formatPhoneWithCountryCode, generateOrderCode } from 'src/utils';
 import { AxiosInsService } from '@modules/axiosIns/axiosIns.service';
-import { messageResponseError } from '@common/constants';
+import { messageResponseError, statusSuperShip } from '@common/constants';
 import moment from 'moment-timezone';
 import { StatusOrderNhatTin } from '@common/constants/nhattin.constant';
 import { StatusOrderLavaMove } from '@common/constants/lalamove.constant';
@@ -134,13 +134,20 @@ export class OrderService {
       soc: generateOrderCode(type),
       note: note,
       product_type: '2',
-      products: products,
+      products: products.map((item) => {
+        return {
+          sku: item.code,
+          name: item.name,
+          price: item.price,
+          weight: item.weight,
+          quantity: item.quantity,
+        };
+      }),
     };
 
     const resSuperShip = (await (await this.axiosInsService.axiosInstanceSuperShip()).post('/v1/partner/orders/add', data)).data;
-    console.log('🚀 ~ OrderService ~ handleCreateDataSuperShip ~ resSuperShip:', resSuperShip);
     if (resSuperShip.status == 'Success') {
-      const { code, sorting, shortcode, soc, fee, insurance, weight } = resSuperShip.results;
+      const { code, sorting, shortcode, soc, fee, insurance, weight, status } = resSuperShip.results;
       return {
         order: {
           code,
@@ -159,7 +166,7 @@ export class OrderService {
           collection,
           value,
           totalFee: fee + insurance,
-          status: 'Chờ lấy hàng',
+          status: statusSuperShip.find((item) => item.key == status)?.value || 'Chờ',
         },
         detail: { note, isPODEnabled: false, shareLink: '', weight, mainFee: fee, otherFee: insurance, surcharge: 0, collectionFee: 0, vat: 0, r2sFee: 0, returnFee: 0 },
       };
@@ -676,8 +683,15 @@ export class OrderService {
           return {
             data: `${process.env.URL_BASE_PRINT_NHATTIN}/v1/bill/print?do_code=${order.code}&partner_id=${process.env.PARTNER_NHATTIN}`,
           };
-        default:
-          break;
+        case OrderUnitConstant.SUPERSHIP:
+          const resSuperShip = (await (await this.axiosInsService.axiosInstanceSuperShip()).post('/v1/partner/orders/token', { code: [order.code] })).data;
+          if (resSuperShip.status == 'Success') {
+            return {
+              data: `${process.env.URL_BASE_PRINT_SUPERSHIP}?token=${resSuperShip.results?.token}&size=${size || 'A5'}`,
+            };
+          } else {
+            throw new Error(messageResponseError.order.cannot_print_order);
+          }
       }
     } catch (error) {
       throw new Error(messageResponseError.order.cannot_print_order);
@@ -723,7 +737,6 @@ export class OrderService {
             isRemove = true;
           }
           break;
-
         case OrderUnitConstant.GHN:
           const removeOrderGHN = (await (await this.axiosInsService.axiosInstanceGHN()).post('/v2/switch-status/cancel', { order_code: ['5E3NK3RS'] })).data;
           if (removeOrderGHN.message == 'Success') {
@@ -749,7 +762,13 @@ export class OrderService {
           } catch (error) {
             throw new Error(messageResponseError.order.delete_order_lalamove_error);
           }
-
+          break;
+        case OrderUnitConstant.SUPERSHIP:
+          const removeOrderSuperShip = (await (await this.axiosInsService.axiosInstanceSuperShip()).post('/v1/partner/orders/cancel', { code: order.code })).data;
+          if (removeOrderSuperShip.status == 'Success') {
+            isRemove = true;
+          }
+          break;
         default:
           break;
       }

@@ -68,6 +68,9 @@ export class Order extends BaseEntity {
   @Column({ type: 'datetime', nullable: true })
   estimatedDeliveryTime?: Date;
 
+  @Column()
+  estimatedDeliveryStr?: string;
+
   @OneToOne(() => OrderDetail, (detail) => detail.order, {
     cascade: true,
   })

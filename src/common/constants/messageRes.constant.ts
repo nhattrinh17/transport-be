@@ -26,4 +26,14 @@ export const messageResponseError = {
     ship_method_not_supported: 'ship_method_not_supported',
     delete_order_lalamove_error: 'delete_order_lalamove_error',
   },
+  webhook: {
+    order_not_found: 'order_not_found',
+    status_viettel_invalid: 'status_viettel_invalid',
+    token_viettel_invalid: 'token_viettel_invalid',
+    status_ghtk_invalid: 'status_ghtk_invalid',
+    status_nhattin_invalid: 'status_nhattin_invalid',
+    status_supership_invalid: 'status_supership_invalid',
+    status_ghn_invalid: 'status_ghn_invalid',
+    status_lalamove_invalid: 'status_lalamove_invalid',
+  },
 };

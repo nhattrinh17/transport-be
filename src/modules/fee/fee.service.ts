@@ -40,7 +40,7 @@ export class FeeService {
       ).data;
 
       return {
-        viettel: serviceViettel,
+        viettel: serviceViettel?.filter((i) => i.MA_DV_CHINH != 'SHT'),
         ghn: serviceGHN?.data,
         nhattin: ServiceNhatTin.filter((i) => i.id != 81),
       };
