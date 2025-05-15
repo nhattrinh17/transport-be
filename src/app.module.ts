@@ -8,6 +8,7 @@ import { ProvinceModule } from '@modules/province/province.module';
 import { FeeModule } from '@modules/fee/fee.module';
 import { WarehouseModule } from '@modules/warehouse/warehouse.module';
 import { OrderModule } from '@modules/order/order.module';
+import { WebhookModule } from '@modules/webhook/webhook.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { OrderModule } from '@modules/order/order.module';
     FeeModule,
     WarehouseModule,
     OrderModule,
+    WebhookModule,
   ],
   controllers: [AppController],
   providers: [AppService],

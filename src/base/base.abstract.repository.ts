@@ -86,6 +86,15 @@ export abstract class BaseRepositoryAbstract<T> implements BaseRepositoryInterfa
     return true;
   }
 
+  async softDeleteByCondition(condition: object): Promise<boolean> {
+    const deleteItem = await this.count(condition as any);
+    if (!deleteItem) {
+      return false;
+    }
+    await this.repository.softDelete(condition);
+    return true;
+  }
+
   async permanentlyDelete(id: string): Promise<boolean> {
     const deleteItem = await this.findOneById(id);
     if (!deleteItem) {

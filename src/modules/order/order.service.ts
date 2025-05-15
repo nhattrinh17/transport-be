@@ -10,6 +10,7 @@ import { messageResponseError, statusSuperShip } from '@common/constants';
 import moment from 'moment-timezone';
 import { StatusOrderNhatTin } from '@common/constants/nhattin.constant';
 import { StatusOrderLavaMove } from '@common/constants/lalamove.constant';
+import { PaginationDto } from '@common/decorators';
 
 @Injectable()
 export class OrderService {
@@ -37,7 +38,7 @@ export class OrderService {
           case PaymentMethodOrder.RECEIVER_PAY_FEE:
             return 4;
           default:
-            break;
+            throw new Error(messageResponseError.order.payment_method_not_supported);
         }
 
       case OrderUnitConstant.GHN:
@@ -66,9 +67,8 @@ export class OrderService {
           case ConfigReceiveOrder.NOT_SHOW:
             return 'Không cho xem hàng';
           default:
-            break;
+            throw new Error(messageResponseError.order.config_receive_order_not_supported);
         }
-        return;
       case OrderUnitConstant.NT:
         return;
       case OrderUnitConstant.GHN:
@@ -80,7 +80,7 @@ export class OrderService {
           case ConfigReceiveOrder.NOT_SHOW:
             return 'KHONGCHOXEMHANG';
           default:
-            break;
+            throw new Error(messageResponseError.order.config_receive_order_not_supported);
         }
       default:
         break;
@@ -649,6 +649,7 @@ export class OrderService {
       });
       return {
         message: 'Tạo đơn hàng thành công',
+        code: order.code,
       };
     } catch (error) {
       console.log('🚀 ~ OrderService ~ create ~ error:', error);
@@ -698,16 +699,8 @@ export class OrderService {
     }
   }
 
-  findAll() {
-    return `This action returns all order`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} order`;
-  }
-
-  update(id: number, updateOrderDto: UpdateOrderDto) {
-    return `This action updates a #${id} order`;
+  findAllOrder(pagination: PaginationDto) {
+    return this.orderRepository.findAll({}, { ...pagination });
   }
 
   async remove(id: string) {
@@ -765,19 +758,22 @@ export class OrderService {
           break;
         case OrderUnitConstant.SUPERSHIP:
           const removeOrderSuperShip = (await (await this.axiosInsService.axiosInstanceSuperShip()).post('/v1/partner/orders/cancel', { code: order.code })).data;
+          console.log('🚀 ~ OrderService ~ remove ~ removeOrderSuperShip:', removeOrderSuperShip);
           if (removeOrderSuperShip.status == 'Success') {
             isRemove = true;
+          } else {
+            throw new Error(removeOrderSuperShip?.errors?.message || messageResponseError.order.delete_order_supership_error);
           }
           break;
         default:
           break;
       }
       if (isRemove) {
-        const deleteDetail = await this.orderDetailRepository.permanentlyDeleteByCondition({
+        const deleteDetail = await this.orderDetailRepository.softDeleteByCondition({
           orderId: id,
         });
         deleteDetail &&
-          (await this.orderRepository.permanentlyDeleteByCondition({
+          (await this.orderRepository.softDeleteByCondition({
             id,
           }));
         return { message: 'Hủy đơn hàng thành công' };
@@ -785,7 +781,7 @@ export class OrderService {
         throw new Error(messageResponseError.order.order_not_found);
       }
     } catch (error) {
-      throw new Error(error?.response?.data?.message || error.message);
+      throw new Error(error?.response?.data?.message || error.message || messageResponseError.order.delete_order_error);
     }
   }
 }

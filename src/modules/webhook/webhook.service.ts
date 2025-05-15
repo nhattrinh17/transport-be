@@ -1,7 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { GhtkOrderStatusDto, NhatTinOrderStatusDto, SuperShipWebhookDto, WebhookGHNDto, WebhookViettelDto } from './dto';
 import { OrderDetailRepositoryInterface, OrderRepositoryInterface } from 'src/database/interface';
-import { messageResponseError, orderStatusViettel, reasonGHN, statusOrderGHTK, StatusOrderNhatTin, statusSuperShip } from '@common/constants';
+import { messageResponseError, orderStatusViettel, reasonGHN, statusOrderGHTK, StatusOrderLavaMove, StatusOrderNhatTin, statusSuperShip } from '@common/constants';
+import { LalamoveUtils } from 'src/utils';
+import { WebhookLalamoveDto } from './dto/webhook-lalamove.dto';
 
 @Injectable()
 export class WebhookService {
@@ -10,6 +12,7 @@ export class WebhookService {
     private readonly orderRepository: OrderRepositoryInterface,
     @Inject('OrderDetailRepositoryInterface')
     private readonly orderDetailRepository: OrderDetailRepositoryInterface,
+    private readonly lalamoveUtils: LalamoveUtils,
   ) {}
 
   async handleUpdateOrderViettel(dto: WebhookViettelDto) {
@@ -175,6 +178,63 @@ export class WebhookService {
         {
           code: dto.code,
           soc: dto.soc,
+        },
+        dataUpdateOrder,
+      ),
+      this.orderDetailRepository.findOneAndUpdate(
+        {
+          orderId: order.id,
+        },
+        dataUpdateOrderDetail,
+      ),
+    ]);
+
+    return {
+      message: 'Cập nhật trạng thái đơn hàng thành công',
+    };
+  }
+
+  async checkApiKeyAndDataLalamove(dto: WebhookLalamoveDto) {
+    if (dto.apiKey !== process.env.API_KEY_LALAMOVE) throw new Error(messageResponseError.webhook.api_key_invalid);
+    const checkSignature = this.lalamoveUtils.checkSignatureLalamove(dto.signature, '/webhook/lalamove', 'POST', dto.timestamp, dto.data);
+    if (!checkSignature) throw new Error(messageResponseError.webhook.signature_lalamove_invalid);
+  }
+
+  async handleUpdateOrderLalamove(dto: WebhookLalamoveDto) {
+    this.checkApiKeyAndDataLalamove(dto);
+    const order = await this.orderRepository.findOneByCondition({
+      code: dto.eventType == 'ORDER_REPLACED' ? dto.data?.prevOrderId : dto.data?.order.orderId,
+    });
+    if (!order) {
+      throw new Error(messageResponseError.webhook.order_not_found);
+    }
+    const dataUpdateOrder = {};
+    const dataUpdateOrderDetail = {};
+    switch (dto.eventType) {
+      case 'ORDER_STATUS_CHANGED':
+        const statusText = StatusOrderLavaMove.find((item) => item.status === dto.data?.order.status).name;
+        dataUpdateOrder['status'] = statusText;
+        dataUpdateOrderDetail['shareLink'] = dto.data?.order.shareLink;
+        break;
+      case 'DRIVER_ASSIGNED':
+        dataUpdateOrderDetail['driverName'] = dto.data?.driver.name;
+        dataUpdateOrderDetail['driverPhone'] = dto.data?.driver.phone;
+        break;
+      case 'ORDER_AMOUNT_CHANGED':
+        dataUpdateOrder['totalFee'] = dto.data?.order?.price?.totalPrice;
+        dataUpdateOrderDetail['mainFee'] = dto.data?.order?.price?.subTotal;
+        dataUpdateOrderDetail['otherFee'] = dto.data?.order?.price?.priorityFee;
+        break;
+      case 'ORDER_REPLACED':
+        dataUpdateOrder['code'] = dto.data?.order?.orderId;
+        break;
+      default:
+        break;
+    }
+    await Promise.all([
+      this.orderRepository.findOneAndUpdate(
+        {
+          code: dto.eventType == 'ORDER_REPLACED' ? dto.data?.prevOrderId : dto.data?.order.orderId,
         },
         dataUpdateOrder,
       ),

@@ -132,6 +132,12 @@ export class CreateOrderTable1746713666031 implements MigrationInterface {
             default: 'CURRENT_TIMESTAMP(6)',
             onUpdate: 'CURRENT_TIMESTAMP(6)',
           },
+          {
+            name: 'deletedAt',
+            type: 'datetime(6)',
+            isNullable: true,
+            comment: 'Thời gian xóa',
+          },
         ],
         uniques: [
           {
@@ -173,6 +179,54 @@ export class CreateOrderTable1746713666031 implements MigrationInterface {
             type: 'varchar',
             isNullable: true,
             comment: 'Link chia sẻ đơn hàng',
+          },
+          {
+            name: 'driverName',
+            type: 'varchar',
+            isNullable: true,
+            comment: 'Tên tài xế',
+          },
+          {
+            name: 'driverPhone',
+            type: 'varchar',
+            isNullable: true,
+            comment: 'Số điện thoại tài xế',
+          },
+          {
+            name: 'vehicleType',
+            type: 'varchar',
+            isNullable: true,
+            comment: 'Loại xe',
+          },
+          {
+            name: 'vehiclePlate',
+            type: 'varchar',
+            isNullable: true,
+            comment: 'Biển số xe',
+          },
+          {
+            name: 'vehicleColor',
+            type: 'varchar',
+            isNullable: true,
+            comment: 'Màu xe',
+          },
+          {
+            name: 'vehicleBrand',
+            type: 'varchar',
+            isNullable: true,
+            comment: 'Hãng xe',
+          },
+          {
+            name: 'driverId',
+            type: 'varchar',
+            isNullable: true,
+            comment: 'ID tài xế',
+          },
+          {
+            name: 'driverStatus',
+            type: 'varchar',
+            isNullable: true,
+            comment: 'Trạng thái tài xế',
           },
           {
             name: 'weight',
@@ -232,6 +286,12 @@ export class CreateOrderTable1746713666031 implements MigrationInterface {
             type: 'datetime(6)',
             default: 'CURRENT_TIMESTAMP(6)',
             onUpdate: 'CURRENT_TIMESTAMP(6)',
+          },
+          {
+            name: 'deletedAt',
+            type: 'datetime(6)',
+            isNullable: true,
+            comment: 'Thời gian xóa',
           },
         ],
       }),

@@ -1,4 +1,4 @@
-import { Entity, Column, JoinColumn, OneToOne } from 'typeorm';
+import { Entity, Column, JoinColumn, OneToOne, DeleteDateColumn } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { Order } from './order.entity';
 
@@ -19,6 +19,12 @@ export class OrderDetail extends BaseEntity {
 
   @Column({ nullable: true })
   shareLink: string;
+
+  @Column({ nullable: true })
+  driverName: string;
+
+  @Column({ nullable: true })
+  driverPhone: string;
 
   @Column({ default: 0 })
   weight: number;
@@ -43,4 +49,7 @@ export class OrderDetail extends BaseEntity {
 
   @Column({ default: 0 })
   returnFee: number;
+
+  @DeleteDateColumn({ name: 'deletedAt' })
+  deletedAt: Date;
 }

@@ -11,6 +11,8 @@ export const messageResponseError = {
     warehouse_not_found: 'warehouse_not_found',
   },
   order: {
+    payment_method_not_supported: 'payment_method_not_supported',
+    config_receive_order_not_supported: 'config_receive_order_not_supported',
     create_order_supership_error: 'create_order_supership_error',
     create_order_viettel_error: 'create_order_viettel_error',
     create_order_ghn_error: 'create_order_ghn_error',
@@ -25,6 +27,8 @@ export const messageResponseError = {
     cannot_print_order: 'cannot_print_order',
     ship_method_not_supported: 'ship_method_not_supported',
     delete_order_lalamove_error: 'delete_order_lalamove_error',
+    delete_order_error: 'delete_order_error',
+    delete_order_supership_error: 'delete_order_supership_error',
   },
   webhook: {
     order_not_found: 'order_not_found',
@@ -35,5 +39,7 @@ export const messageResponseError = {
     status_supership_invalid: 'status_supership_invalid',
     status_ghn_invalid: 'status_ghn_invalid',
     status_lalamove_invalid: 'status_lalamove_invalid',
+    api_key_invalid: 'api_key_invalid',
+    signature_lalamove_invalid: 'signature_lalamove_invalid',
   },
 };

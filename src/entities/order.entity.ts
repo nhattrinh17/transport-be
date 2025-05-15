@@ -1,4 +1,4 @@
-import { Entity, Column, OneToOne, Index, Unique } from 'typeorm';
+import { Entity, Column, OneToOne, Index, Unique, DeleteDateColumn } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { OrderDetail } from './order-detail.entity';
 import { ConfigReceiveOrder, PaymentMethodOrder } from '@common/enums';
@@ -75,4 +75,7 @@ export class Order extends BaseEntity {
     cascade: true,
   })
   detail?: OrderDetail;
+
+  @DeleteDateColumn({ name: 'deletedAt' })
+  deletedAt: Date;
 }

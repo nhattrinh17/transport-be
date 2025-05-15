@@ -5,10 +5,18 @@ import { plainToClass } from 'class-transformer';
 
 @Injectable()
 export class ValidationPipe implements PipeTransform<any> {
+  // Skip validation for these DTOs
+  private readonly ignoredDTOs = ['WebhookViettelDto', 'WebhookGHNDto', 'GhtkOrderStatusDto', 'NhatTinOrderStatusDto', 'SuperShipWebhookDto', 'WebhookLalamoveDto'];
+
   async transform(value: any, { metatype }: ArgumentMetadata) {
     if (!metatype || !this.toValidate(metatype)) {
       return value;
     }
+
+    if (this.ignoredDTOs.includes(metatype.name)) {
+      return value;
+    }
+
     const object = plainToClass(metatype, value);
     const errors = await validate(object, {
       whitelist: true,

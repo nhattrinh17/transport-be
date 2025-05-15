@@ -4,6 +4,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { ApiOperationCustom } from 'src/custom-decorator';
+import { Pagination, PaginationDto } from '@common/decorators';
 
 @ApiTags('Order')
 @Controller('order')
@@ -37,6 +38,16 @@ export class OrderController {
   async remove(@Param('id') id: string) {
     try {
       return await this.orderService.remove(id);
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  @Get()
+  @ApiOperationCustom('Order', 'Get', 'Lấy danh sách đơn hàng')
+  async getAllOrder(@Pagination() pagination: PaginationDto) {
+    try {
+      return await this.orderService.findAllOrder(pagination);
     } catch (error) {
       throw new BadRequestException(error.message);
     }

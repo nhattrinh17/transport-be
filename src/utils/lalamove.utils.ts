@@ -19,4 +19,12 @@ export class LalamoveUtils {
       token: `${this.API_KEY}:${time}:${signature}`,
     };
   }
+
+  checkSignatureLalamove(signature: string, path: string, method: string, timestamp: number, dataBody: any) {
+    const body = JSON.stringify(dataBody || {});
+
+    const rawSignature = `${timestamp}\r\n${method}\r\n${path}\r\n\r\n${body}`;
+    const signatureCheck = HmacSHA256(rawSignature, this.SECRET).toString();
+    return signature === signatureCheck;
+  }
 }

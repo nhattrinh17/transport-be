@@ -75,6 +75,9 @@ export class DataWWebhookLalamove {
   @ApiProperty({ name: 'location', type: DataLocationDriverLalamove, description: 'Vị trí tài xế', example: { lat: 10.762622, lng: 106.660172 } })
   location: DataLocationDriverLalamove;
 
+  @ApiProperty({ name: 'prevOrderId', type: String, description: 'Mã đơn hàng trước đó', example: 'order_test' })
+  prevOrderId: string;
+
   @ApiProperty({ name: 'updatedAt', type: String, description: 'Thời gian cập nhật', example: '2023-10-01T00:00:00Z' })
   updatedAt: string;
 }

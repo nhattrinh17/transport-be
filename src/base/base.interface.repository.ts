@@ -28,6 +28,8 @@ export interface BaseRepositoryInterface<T> {
 
   softDelete(id: string): Promise<boolean>;
 
+  softDeleteByCondition(condition: object | any[]): Promise<boolean>;
+
   permanentlyDelete(id: string): Promise<boolean>;
 
   permanentlyDeleteByCondition(condition: object | any[]): Promise<boolean>;
