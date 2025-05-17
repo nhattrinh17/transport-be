@@ -65,6 +65,9 @@ export class Order extends BaseEntity {
   @Column()
   status: string;
 
+  @Column()
+  statusText: string;
+
   @Column({ type: 'datetime', nullable: true })
   estimatedDeliveryTime?: Date;
 

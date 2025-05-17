@@ -11,6 +11,7 @@ import moment from 'moment-timezone';
 import { StatusOrderNhatTin } from '@common/constants/nhattin.constant';
 import { StatusOrderLavaMove } from '@common/constants/lalamove.constant';
 import { PaginationDto } from '@common/decorators';
+import { Not } from 'typeorm';
 
 @Injectable()
 export class OrderService {
@@ -166,7 +167,7 @@ export class OrderService {
           collection,
           value,
           totalFee: fee + insurance,
-          status: statusSuperShip.find((item) => item.key == status)?.value || 'Chờ',
+          statusText: statusSuperShip.find((item) => item.key == status)?.value || 'Chờ',
         },
         detail: { note, isPODEnabled: false, shareLink: '', weight, mainFee: fee, otherFee: insurance, surcharge: 0, collectionFee: 0, vat: 0, r2sFee: 0, returnFee: 0 },
       };
@@ -269,7 +270,7 @@ export class OrderService {
           collection,
           value,
           totalFee: MONEY_TOTAL,
-          status: 'Chờ lấy hàng',
+          statusText: 'Chờ lấy hàng',
         },
         detail: { note, isPODEnabled: false, shareLink: '', weight: EXCHANGE_WEIGHT, mainFee: MONEY_TOTALFEE, otherFee: MONEY_OTHER_FEE, surcharge: MONEY_FEE, collectionFee: MONEY_COLLECTION_FEE, vat: MONEY_FEE_VAT, r2sFee: 0, returnFee: 0 },
       };
@@ -360,7 +361,7 @@ export class OrderService {
             collection,
             value,
             totalFee: total_fee,
-            status: 'Chờ lấy hàng',
+            statusText: 'Chờ lấy hàng',
             estimatedDeliveryTime: expected_delivery_time,
           },
           detail: { note, isPODEnabled: false, shareLink: '', weight, mainFee: fee?.main_service, otherFee: fee?.station_do + fee?.station_pu, surcharge: 0, collectionFee: 0, vat: 0, r2sFee: fee?.r2s, returnFee: fee?.return },
@@ -451,7 +452,7 @@ export class OrderService {
             collection,
             value,
             totalFee: fee + insurance_fee,
-            status: 'Đã tiếp nhận',
+            statusText: 'Đã tiếp nhận',
             estimatedDeliveryTime:
               estimated_deliver_time?.split('')[0] == 'Chiều'
                 ? moment(estimated_deliver_time?.split('')[1]).tz('Asia/Ho_Chi_Minh').format('DD/MM/YYYY 9:00:00')
@@ -543,7 +544,7 @@ export class OrderService {
           collection,
           value,
           totalFee: total_fee,
-          status: StatusOrderNhatTin.find((item) => item.id == status_id)?.name,
+          statusText: StatusOrderNhatTin.find((item) => item.id == status_id)?.name,
           estimatedDeliveryTime: expected_at,
         },
         detail: { note, isPODEnabled: false, shareLink: '', weight, mainFee: main_fee, otherFee: insurr_fee + lifting_fee + counting_fee + packing_fee, surcharge: remote_fee, collectionFee: cod_fee, vat: 0, r2sFee: 0, returnFee: 0 },
@@ -596,7 +597,7 @@ export class OrderService {
           address: receiverAddress,
           phone: receiverPhone,
           totalFee: +priceBreakdown?.total,
-          status: StatusOrderLavaMove.find((item) => item.status == status)?.name,
+          statusText: StatusOrderLavaMove.find((item) => item.status == status)?.name,
         },
         detail: {
           note: '',
@@ -700,7 +701,12 @@ export class OrderService {
   }
 
   findAllOrder(pagination: PaginationDto) {
-    return this.orderRepository.findAll({}, { ...pagination });
+    return this.orderRepository.findAll(
+      {
+        // deletedAt: Not(null),
+      },
+      { ...pagination },
+    );
   }
 
   async remove(id: string) {

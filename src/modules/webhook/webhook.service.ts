@@ -24,12 +24,13 @@ export class WebhookService {
     if (!order) {
       throw new Error(messageResponseError.webhook.order_not_found);
     }
-    const statusText = orderStatusViettel.find((item) => item.code === dto.ORDER_STATUS).description;
-    if (!statusText) {
+    const status = orderStatusViettel.find((item) => item.code === dto.ORDER_STATUS);
+    if (!status) {
       throw new Error(messageResponseError.webhook.status_viettel_invalid);
     }
     const dataUpdate = {
-      status: statusText,
+      status: status.statusSys,
+      statusText: status.description,
       estimatedDeliveryStr: dto.EXPECTED_DELIVERY,
       totalFee: dto.MONEY_TOTAL,
     };
@@ -96,13 +97,15 @@ export class WebhookService {
     if (!order) {
       throw new Error(messageResponseError.webhook.order_not_found);
     }
-    let statusText = statusOrderGHTK.find((item) => item.code === dto.status_id).description;
-    if (!statusText) {
+    let status = statusOrderGHTK.find((item) => item.code === dto.status_id);
+    if (!status) {
       throw new Error(messageResponseError.webhook.status_ghtk_invalid);
     }
+    let statusText = status.description;
     if (dto.reason_code) statusText = `${statusText} - ${reasonGHN.find((item) => item.code == +dto.reason_code).description}`;
     const dataUpdate = {
-      status: statusText,
+      status: status.statusSys,
+      statusText,
       totalFee: dto.fee,
     };
 
@@ -127,13 +130,15 @@ export class WebhookService {
     if (!order) {
       throw new Error(messageResponseError.webhook.order_not_found);
     }
-    let statusText = StatusOrderNhatTin.find((item) => item.id === dto.status_id).name;
-    if (!statusText) {
+    let status = StatusOrderNhatTin.find((item) => item.id === dto.status_id);
+    if (!status) {
       throw new Error(messageResponseError.webhook.status_nhattin_invalid);
     }
+    let statusText = status.name;
     if (dto.reason) statusText += ` - ${dto.reason}`;
     const dataUpdate = {
-      status: statusText,
+      status: status.statusSys,
+      statusText,
       estimatedDeliveryStr: dto.expected_at,
     };
 
@@ -161,11 +166,12 @@ export class WebhookService {
     const dataUpdateOrder = {};
     const dataUpdateOrderDetail = {};
     if (dto.type == 'update_status') {
-      const statusText = statusSuperShip.find((item) => item.key === dto.status).value;
-      if (!statusText) {
+      const status = statusSuperShip.find((item) => item.key === dto.status);
+      if (!status) {
         throw new Error(messageResponseError.webhook.status_supership_invalid);
       }
-      dataUpdateOrder['status'] = `${statusText} - ${dto.reason_text}`;
+      dataUpdateOrder['statusText'] = `${status.value} - ${dto.reason_text}`;
+      dataUpdateOrder['status'] = status.statusSys;
     } else {
       dataUpdateOrderDetail['weight'] = dto.weight;
       dataUpdateOrderDetail['mainFee'] = dto.fshipment;
@@ -212,8 +218,9 @@ export class WebhookService {
     const dataUpdateOrderDetail = {};
     switch (dto.eventType) {
       case 'ORDER_STATUS_CHANGED':
-        const statusText = StatusOrderLavaMove.find((item) => item.status === dto.data?.order.status).name;
-        dataUpdateOrder['status'] = statusText;
+        const status = StatusOrderLavaMove.find((item) => item.status === dto.data?.order.status);
+        dataUpdateOrder['status'] = status.statusSys;
+        dataUpdateOrder['statusText'] = status.name;
         dataUpdateOrderDetail['shareLink'] = dto.data?.order.shareLink;
         break;
       case 'DRIVER_ASSIGNED':

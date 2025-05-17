@@ -61,9 +61,14 @@ export class CreateOrderTable1746713666031 implements MigrationInterface {
             comment: 'Hình thức thanh toán',
           },
           {
-            name: 'senderAddress',
+            name: 'senderName',
             type: 'varchar',
             isNullable: true,
+            comment: 'Tên người gửi',
+          },
+          {
+            name: 'senderAddress',
+            type: 'varchar',
             comment: 'Địa chỉ người gửi',
           },
           {
@@ -106,6 +111,12 @@ export class CreateOrderTable1746713666031 implements MigrationInterface {
           },
           {
             name: 'status',
+            type: 'varchar',
+            comment: 'Mã tạng thái thái đơn',
+            default: "'RECEIVED'",
+          },
+          {
+            name: 'statusText',
             type: 'varchar',
             comment: 'Trạng thái đơn hàng',
           },
@@ -161,6 +172,11 @@ export class CreateOrderTable1746713666031 implements MigrationInterface {
           {
             name: 'orderId',
             type: 'varchar(36)',
+          },
+          {
+            name: 'isPinter',
+            type: 'bool',
+            default: false,
           },
           {
             name: 'note',
