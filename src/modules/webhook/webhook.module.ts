@@ -5,9 +5,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Order, OrderDetail } from '@entities/index';
 import { OrderDetailRepository, OrderRepository } from 'src/database/repository';
 import { LalamoveUtils } from 'src/utils';
+import { OrderLogModule } from '@modules/order-log/order-log.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Order, OrderDetail])],
+  imports: [OrderLogModule, TypeOrmModule.forFeature([Order, OrderDetail])],
   controllers: [WebhookController],
   providers: [
     WebhookService,

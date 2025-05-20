@@ -4,6 +4,7 @@ import { OrderDetailRepositoryInterface, OrderRepositoryInterface } from 'src/da
 import { messageResponseError, orderStatusViettel, reasonGHN, statusOrderGHTK, StatusOrderLavaMove, StatusOrderNhatTin, statusSuperShip } from '@common/constants';
 import { LalamoveUtils } from 'src/utils';
 import { WebhookLalamoveDto } from './dto/webhook-lalamove.dto';
+import { OrderLogService } from '@modules/order-log/order-log.service';
 
 @Injectable()
 export class WebhookService {
@@ -13,6 +14,7 @@ export class WebhookService {
     @Inject('OrderDetailRepositoryInterface')
     private readonly orderDetailRepository: OrderDetailRepositoryInterface,
     private readonly lalamoveUtils: LalamoveUtils,
+    private readonly orderLogService: OrderLogService,
   ) {}
 
   async handleUpdateOrderViettel(dto: WebhookViettelDto) {
@@ -35,13 +37,24 @@ export class WebhookService {
       totalFee: dto.MONEY_TOTAL,
     };
 
-    await this.orderRepository.findOneAndUpdate(
-      {
-        code: dto.ORDER_NUMBER,
-        soc: dto.ORDER_REFERENCE,
-      },
-      dataUpdate,
-    );
+    const dataOrderLog = {
+      typeUpdate: 'status',
+      orderId: order.id,
+      statusPrevious: order.statusText,
+      statusCurrent: status.description,
+      changeBy: 'Viettel',
+    };
+
+    await Promise.all([
+      this.orderRepository.findOneAndUpdate(
+        {
+          code: dto.ORDER_NUMBER,
+          soc: dto.ORDER_REFERENCE,
+        },
+        dataUpdate,
+      ),
+      this.orderLogService.createOrderLog(dataOrderLog),
+    ]);
 
     return {
       message: 'Cập nhật trạng thái đơn hàng thành công',

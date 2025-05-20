@@ -41,7 +41,13 @@ export class ProvinceService {
     }
     return {
       viettel: providerViettel?.data,
-      ghn: providerGHN?.data,
+      ghn: providerGHN?.data?.map((i) => {
+        return {
+          ProvinceID: i.ProvinceID,
+          ProvinceName: i.ProvinceName,
+          NameExtension: i.NameExtension,
+        };
+      }),
     };
   }
 
@@ -76,7 +82,15 @@ export class ProvinceService {
       }
       return {
         viettel: districtViettel?.data,
-        ghn: districtGHN?.data,
+        ghn: districtGHN?.data?.map((i) => {
+          return {
+            DistrictID: i.DistrictID,
+            ProvinceID: i.ProvinceID,
+            DistrictName: i.DistrictName,
+            Code: i.Code,
+            NameExtension: i.NameExtension,
+          };
+        }),
       };
     } catch (error) {
       throw new Error(error.message);
@@ -114,7 +128,14 @@ export class ProvinceService {
       }
       return {
         viettel: wardsViettel?.data,
-        ghn: wardsGHN?.data,
+        ghn: wardsGHN?.data?.map((i) => {
+          return {
+            WardCode: i.WardCode,
+            DistrictID: i.DistrictID,
+            WardName: i.WardName,
+            NameExtension: i.NameExtension,
+          };
+        }),
       };
     } catch (error) {
       throw new Error(error.message);

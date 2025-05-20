@@ -5,9 +5,10 @@ import { AxiosInsModule } from '@modules/axiosIns/axiosIns.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Order, OrderDetail } from '@entities/index';
 import { OrderDetailRepository, OrderRepository } from 'src/database/repository';
+import { OrderLogModule } from '@modules/order-log/order-log.module';
 
 @Module({
-  imports: [AxiosInsModule, TypeOrmModule.forFeature([Order, OrderDetail])],
+  imports: [OrderLogModule, AxiosInsModule, TypeOrmModule.forFeature([Order, OrderDetail])],
   controllers: [OrderController],
   providers: [
     OrderService,

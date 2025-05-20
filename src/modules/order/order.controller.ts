@@ -33,11 +33,11 @@ export class OrderController {
     }
   }
 
-  @Delete(':id')
-  @ApiOperationCustom('Order', 'Delete', 'Xóa đơn hàng')
+  @Patch(':id/cancel')
+  @ApiOperationCustom('Order', 'Patch', 'Hủy đơn hàng')
   async remove(@Param('id') id: string) {
     try {
-      return await this.orderService.remove(id);
+      return await this.orderService.cancel(id);
     } catch (error) {
       throw new BadRequestException(error.message);
     }

@@ -11,7 +11,7 @@ import moment from 'moment-timezone';
 import { StatusOrderNhatTin } from '@common/constants/nhattin.constant';
 import { StatusOrderLavaMove } from '@common/constants/lalamove.constant';
 import { PaginationDto } from '@common/decorators';
-import { Not } from 'typeorm';
+import { OrderLogService } from '@modules/order-log/order-log.service';
 
 @Injectable()
 export class OrderService {
@@ -21,6 +21,7 @@ export class OrderService {
     @Inject('OrderDetailRepositoryInterface')
     private readonly orderDetailRepository: OrderDetailRepositoryInterface,
     private readonly axiosInsService: AxiosInsService,
+    private readonly orderLogService: OrderLogService,
   ) {}
 
   handleGetPaymentMethod(unit: string, paymentMethod: PaymentMethodOrder) {
@@ -664,7 +665,20 @@ export class OrderService {
       if (!order) throw new Error(messageResponseError.order.order_not_found);
       switch (order.unit) {
         case OrderUnitConstant.VIETTEL:
-          throw new Error(messageResponseError.order.viettel_unSupported_print_order);
+          const resViettel = (
+            await (
+              await this.axiosInsService.axiosInstanceViettel()
+            ).post('/v2/order/encryptLinkPrint', {
+              TYPE: 1,
+              ORDER_ARRAY: [order.code],
+              EXPIRY_TIME: new Date().getTime() + 86400000,
+              PRINT_TOKEN: 'Token in do Viettelpost Cấp',
+            })
+          ).data;
+          if (resViettel.error) throw new Error(messageResponseError.order.cannot_print_order);
+          return {
+            data: resViettel.data,
+          };
         case OrderUnitConstant.GHN:
           const resToken = (
             await (
@@ -709,9 +723,9 @@ export class OrderService {
     );
   }
 
-  async remove(id: string) {
+  async cancel(id: string) {
     try {
-      const order = await this.orderRepository.findOneById(id, ['unit', 'code', 'id']);
+      const order = await this.orderRepository.findOneById(id, ['unit', 'code', 'statusText', 'id']);
       if (!order) throw new Error(messageResponseError.order.order_not_found);
       let isRemove = false;
       switch (order.unit) {
@@ -764,7 +778,6 @@ export class OrderService {
           break;
         case OrderUnitConstant.SUPERSHIP:
           const removeOrderSuperShip = (await (await this.axiosInsService.axiosInstanceSuperShip()).post('/v1/partner/orders/cancel', { code: order.code })).data;
-          console.log('🚀 ~ OrderService ~ remove ~ removeOrderSuperShip:', removeOrderSuperShip);
           if (removeOrderSuperShip.status == 'Success') {
             isRemove = true;
           } else {
@@ -775,13 +788,19 @@ export class OrderService {
           break;
       }
       if (isRemove) {
-        const deleteDetail = await this.orderDetailRepository.softDeleteByCondition({
-          orderId: id,
-        });
-        deleteDetail &&
-          (await this.orderRepository.softDeleteByCondition({
-            id,
-          }));
+        await Promise.all([
+          this.orderRepository.findByIdAndUpdate(id, {
+            status: 'CANCEL',
+            statusText: 'Đã hủy đơn hàng',
+          }),
+          this.orderLogService.createOrderLog({
+            orderId: id,
+            statusPrevious: order.statusText,
+            statusCurrent: 'Đã hủy đơn hàng',
+            typeUpdate: 'status',
+            changeBy: 'Người dùng',
+          }),
+        ]);
         return { message: 'Hủy đơn hàng thành công' };
       } else {
         throw new Error(messageResponseError.order.order_not_found);
