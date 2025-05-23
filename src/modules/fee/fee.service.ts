@@ -6,6 +6,7 @@ import { GetFeeDto, GetFeeServiceFastDto, GetServiceAvailableDto } from './dto/c
 import { ProvinceService } from '@modules/province/province.service';
 import { send } from 'process';
 import { ServiceNhatTin } from '@common/constants/nhattin.constant';
+import { handleGetPaymentMethod } from 'src/utils';
 
 @Injectable()
 export class FeeService {
@@ -100,12 +101,29 @@ export class FeeService {
       deliver_option: 'none',
     };
 
-    const [feeViettel, feeGHN, leadTimeGHN, feeGHTK] = await Promise.all([
+    const dataNhatTin = {
+      partner_id: Number(process.env.PARTNER_NHATTIN),
+      weight: dto.productWeight / 1000,
+      service_id: dto.serviceTypeNT,
+      width: dto.productWith,
+      length: dto.productLength,
+      height: dto.productHeight,
+      payment_method_id: handleGetPaymentMethod('NT', dto.paymentMethod),
+      cod_amount: dto.moneyCollection,
+      cargo_value: dto.productPrice,
+      s_province: dto.senderProvinceStr,
+      s_district: dto.senderDistrictStr,
+      r_province: dto.receiverProvinceStr,
+      r_district: dto.receiverDistrictStr,
+    };
+
+    const [feeViettel, feeGHN, leadTimeGHN, feeGHTK, resNhatTin] = await Promise.all([
       //
       (await this.axiosInsService.axiosInstanceViettel()).post(`/v2/order/getPrice`, dataViettel),
       (await this.axiosInsService.axiosInstanceGHN()).post(`/v2/shipping-order/fee`, dataGHN),
       (await this.axiosInsService.axiosInstanceGHN()).post(`/v2/shipping-order/leadtime`, dataLeadTime),
       (await this.axiosInsService.axiosInstanceGHTK()).get(`/services/shipment/fee`, { params: dataGHTK }),
+      (await (await this.axiosInsService.axiosInstanceNhatTin()).post(`/v1/bill/calc-fee`, dataNhatTin)).data,
     ]);
 
     return {
@@ -115,6 +133,7 @@ export class FeeService {
         leadTime: leadTimeGHN.data?.data,
       },
       ghtk: feeGHTK.data?.fee,
+      nhattin: resNhatTin?.data[0],
     };
   }
 
@@ -151,6 +170,7 @@ export class FeeService {
     if (dto.scheduleAt) {
       dataLALAMOVE.scheduleAt = dto.scheduleAt;
     }
+    console.log('🚀 ~ FeeService ~ calculateFeeFaster ~ dataLALAMOVE:', JSON.stringify(dataLALAMOVE));
 
     const dataSuperShip = {
       sender_province: dto.stops[0].province,
@@ -182,7 +202,7 @@ export class FeeService {
       width: 0,
       length: 0,
       height: 0,
-      payment_method_id: dto.paymentMethod,
+      payment_method_id: handleGetPaymentMethod('NT', dto.paymentMethod),
       cod_amount: dto.item.moneyCollection,
       cargo_value: dto.item.price,
       s_province: dto.stops[0].province,
@@ -206,9 +226,9 @@ export class FeeService {
 
     return {
       lalamove: resLala,
-      superShip: resSuperShip?.results,
+      superShip: resSuperShip?.results[0],
       viettel: resViettel.data?.data,
-      nhattin: resNhatTin?.data,
+      nhattin: resNhatTin?.data[0],
     };
   }
 }

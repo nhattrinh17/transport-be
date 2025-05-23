@@ -1,3 +1,4 @@
+import { PaymentMethodOrder } from '@common/enums';
 import { FeeProductType } from '@common/enums/fee.enum';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
@@ -124,10 +125,19 @@ export class GetFeeDto {
   @ApiProperty({ name: 'serviceCodeViettel', type: String, description: 'Mã dịch vụ' })
   serviceCodeViettel: string;
 
+  @IsEnum(PaymentMethodOrder)
+  @ApiProperty({ name: 'paymentMethod', description: 'Hình thức thanh toán', enum: PaymentMethodOrder })
+  paymentMethod: PaymentMethodOrder;
+
   @Transform(({ value }) => Number(value))
   @IsNumber()
   @ApiProperty({ name: 'serviceTypeGHN', type: Number, description: 'Mã dịch vụ' })
   serviceTypeGHN: number;
+
+  @Transform(({ value }) => Number(value))
+  @IsNumber()
+  @ApiProperty({ name: 'serviceTypeNT', type: Number, description: 'Mã dịch vụ' })
+  serviceTypeNT: number;
 
   @Transform(({ value }) => Number(value))
   @IsNumber()
@@ -261,10 +271,9 @@ export class GetFeeServiceFastDto {
   @ApiProperty({ name: 'scheduleAt', type: String, description: 'THời gian nhận hàng' })
   scheduleAt: string;
 
-  @Transform(({ value }) => Number(value))
-  @IsNumber()
-  @ApiProperty({ name: 'paymentMethod', type: Number, description: 'Mã hình thức thanh toán' })
-  paymentMethod: number;
+  @IsEnum(PaymentMethodOrder)
+  @ApiProperty({ name: 'paymentMethod', description: 'Hình thức thanh toán', enum: PaymentMethodOrder })
+  paymentMethod: PaymentMethodOrder;
 }
 
 export class GetServiceAvailableDto {

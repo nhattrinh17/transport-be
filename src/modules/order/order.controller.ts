@@ -43,6 +43,16 @@ export class OrderController {
     }
   }
 
+  @Get('count')
+  @ApiOperationCustom('Order', 'Get', 'Lấy số lượng đơn hàng theo trạng thái')
+  async getAllCount() {
+    try {
+      return await this.orderService.findCountOrderByStatus();
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
   @Get()
   @ApiOperationCustom('Order', 'Get', 'Lấy danh sách đơn hàng')
   async getAllOrder(@Pagination() pagination: PaginationDto) {

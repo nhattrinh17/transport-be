@@ -1,3 +1,6 @@
+import { OrderUnitConstant } from '@common/constants';
+import { PaymentMethodOrder } from '@common/enums';
+
 export function generateOrderCode(type: string): string {
   const prefix = type.toUpperCase(); // Chuyển type thành chữ in hoa
 
@@ -26,4 +29,34 @@ export function formatPhoneWithCountryCode(phone: string, countryCode = '+84'): 
 
   // Trường hợp không rõ ràng, cứ thêm mã vùng vào đầu
   return countryCode + normalized;
+}
+
+export function handleGetPaymentMethod(unit: string, paymentMethod: PaymentMethodOrder) {
+  switch (unit) {
+    case OrderUnitConstant.SUPERSHIP:
+      if (paymentMethod == PaymentMethodOrder.SENDER) return '1';
+      else return '2';
+    case OrderUnitConstant.VIETTEL:
+      switch (paymentMethod) {
+        case PaymentMethodOrder.SENDER:
+          return 1;
+        case PaymentMethodOrder.RECEIVER_PAY_ALL:
+          return 2;
+        case PaymentMethodOrder.RECEIVER_PAY_PRODUCT:
+          return 3;
+        case PaymentMethodOrder.RECEIVER_PAY_FEE:
+          return 4;
+        default:
+          return 0;
+      }
+
+    case OrderUnitConstant.GHN:
+      if (paymentMethod == PaymentMethodOrder.SENDER) return 1;
+      return 2;
+    case OrderUnitConstant.NT:
+      if (paymentMethod == PaymentMethodOrder.SENDER) return 10;
+      return 20;
+    default:
+      break;
+  }
 }

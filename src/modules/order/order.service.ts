@@ -4,7 +4,7 @@ import { UpdateOrderDto } from './dto/update-order.dto';
 import { OrderDetailRepositoryInterface, OrderRepositoryInterface } from 'src/database/interface';
 import { OrderUnitConstant } from '@common/constants/order.constant';
 import { ConfigReceiveOrder, PaymentMethodOrder } from '@common/enums';
-import { formatPhoneWithCountryCode, generateOrderCode } from 'src/utils';
+import { formatPhoneWithCountryCode, generateOrderCode, handleGetPaymentMethod } from 'src/utils';
 import { AxiosInsService } from '@modules/axiosIns/axiosIns.service';
 import { messageResponseError, statusSuperShip } from '@common/constants';
 import moment from 'moment-timezone';
@@ -23,36 +23,6 @@ export class OrderService {
     private readonly axiosInsService: AxiosInsService,
     private readonly orderLogService: OrderLogService,
   ) {}
-
-  handleGetPaymentMethod(unit: string, paymentMethod: PaymentMethodOrder) {
-    switch (unit) {
-      case OrderUnitConstant.SUPERSHIP:
-        if (paymentMethod == PaymentMethodOrder.SENDER) return '1';
-        else return '2';
-      case OrderUnitConstant.VIETTEL:
-        switch (paymentMethod) {
-          case PaymentMethodOrder.SENDER:
-            return 1;
-          case PaymentMethodOrder.RECEIVER_PAY_ALL:
-            return 2;
-          case PaymentMethodOrder.RECEIVER_PAY_PRODUCT:
-            return 3;
-          case PaymentMethodOrder.RECEIVER_PAY_FEE:
-            return 4;
-          default:
-            throw new Error(messageResponseError.order.payment_method_not_supported);
-        }
-
-      case OrderUnitConstant.GHN:
-        if (paymentMethod == PaymentMethodOrder.SENDER) return 1;
-        return 2;
-      case OrderUnitConstant.NT:
-        if (paymentMethod == PaymentMethodOrder.SENDER) return 10;
-        return 20;
-      default:
-        break;
-    }
-  }
 
   handleGetConfigReceive(unit: string, configReceive: ConfigReceiveOrder) {
     switch (unit) {
@@ -113,7 +83,7 @@ export class OrderService {
       products,
     } = dto;
     if (dto.type == 'NORMAL') throw new Error(messageResponseError.order.ship_method_not_supported);
-    const payer = this.handleGetPaymentMethod(unit, paymentMethod);
+    const payer = handleGetPaymentMethod(unit, paymentMethod);
     const configReceiveOrder = this.handleGetConfigReceive(unit, configReceive);
     const data = {
       pickup_phone: senderPhone,
@@ -232,13 +202,13 @@ export class OrderService {
       PRODUCT_WIDTH: width,
       PRODUCT_HEIGHT: height,
       PRODUCT_TYPE: 'HH',
-      ORDER_PAYMENT: this.handleGetPaymentMethod(unit, paymentMethod),
+      ORDER_PAYMENT: handleGetPaymentMethod(unit, paymentMethod),
       ORDER_SERVICE: serviceId,
       ORDER_SERVICE_ADD: '',
       ORDER_VOUCHER: '',
       ORDER_NOTE: `${this.handleGetConfigReceive(unit, configReceive)} - ${note}`,
       MONEY_COLLECTION: collection,
-      MONEY_TOTALFEE: 0,
+      MONEY_TOTAL_FEE: 0,
       MONEY_FEECOD: 0,
       MONEY_FEEVAS: 0,
       MONEY_FEEINSURRANCE: 0,
@@ -252,7 +222,7 @@ export class OrderService {
     };
     const resViettel = (await (await this.axiosInsService.axiosInstanceViettel()).post('/v2/order/createOrder', data)).data;
     if (!resViettel.error) {
-      const { ORDER_NUMBER, MONEY_OTHER_FEE, MONEY_TOTALFEE, MONEY_FEE, MONEY_COLLECTION_FEE, MONEY_FEE_VAT, EXCHANGE_WEIGHT, MONEY_TOTAL } = resViettel.data;
+      const { ORDER_NUMBER, MONEY_OTHER_FEE, MONEY_TOTAL_FEE, MONEY_FEE, MONEY_COLLECTION_FEE, MONEY_FEE_VAT, EXCHANGE_WEIGHT, MONEY_TOTAL } = resViettel.data;
       return {
         order: {
           code: ORDER_NUMBER,
@@ -273,7 +243,7 @@ export class OrderService {
           totalFee: MONEY_TOTAL,
           statusText: 'Chờ lấy hàng',
         },
-        detail: { note, isPODEnabled: false, shareLink: '', weight: EXCHANGE_WEIGHT, mainFee: MONEY_TOTALFEE, otherFee: MONEY_OTHER_FEE, surcharge: MONEY_FEE, collectionFee: MONEY_COLLECTION_FEE, vat: MONEY_FEE_VAT, r2sFee: 0, returnFee: 0 },
+        detail: { note, isPODEnabled: false, shareLink: '', weight: EXCHANGE_WEIGHT, mainFee: MONEY_TOTAL_FEE, otherFee: MONEY_OTHER_FEE, surcharge: MONEY_FEE, collectionFee: MONEY_COLLECTION_FEE, vat: MONEY_FEE_VAT, r2sFee: 0, returnFee: 0 },
       };
     } else {
       throw new Error(messageResponseError.order.create_order_viettel_error);
@@ -310,7 +280,7 @@ export class OrderService {
     if (type != 'NORMAL') throw new Error(messageResponseError.order.ship_method_not_supported);
     const orderCodeClient = generateOrderCode(type);
     const data = {
-      payment_type_id: this.handleGetPaymentMethod(unit, paymentMethod),
+      payment_type_id: handleGetPaymentMethod(unit, paymentMethod),
       note: note,
       required_note: this.handleGetConfigReceive(unit, configReceive),
       client_order_code: orderCodeClient,
@@ -415,7 +385,7 @@ export class OrderService {
         district: receiverDistrict,
         ward: receiverWard,
         hamlet: 'Khác',
-        is_freeship: this.handleGetPaymentMethod(unit, paymentMethod),
+        is_freeship: handleGetPaymentMethod(unit, paymentMethod),
         pick_money: collection,
         note: note,
         value: value,
@@ -505,7 +475,7 @@ export class OrderService {
       length,
       height,
       service_id: Number(serviceId),
-      payment_method_id: this.handleGetPaymentMethod(unit, paymentMethod),
+      payment_method_id: handleGetPaymentMethod(unit, paymentMethod),
       cod_amount: collection,
       cargo_value: value,
       cargo_type_id: 2,
@@ -712,6 +682,10 @@ export class OrderService {
     } catch (error) {
       throw new Error(messageResponseError.order.cannot_print_order);
     }
+  }
+
+  findCountOrderByStatus() {
+    return this.orderRepository.findCountOrderByStatus();
   }
 
   findAllOrder(pagination: PaginationDto) {

@@ -53,4 +53,8 @@ export class OrderRepository extends BaseRepositoryAbstract<Order> implements Or
       data: items,
     }));
   }
+
+  findCountOrderByStatus(): Promise<any> {
+    return this.OrderRepository.createQueryBuilder('order').select('order.status', 'status').addSelect('COUNT(order.id)', 'count').groupBy('order.status').getRawMany();
+  }
 }
