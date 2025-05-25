@@ -119,6 +119,6 @@ export class CreateOrderDto {
   paymentMethod: PaymentMethodOrder;
 
   @IsArray()
-  @ApiProperty({ name: 'products', description: 'Danh sách sản phẩm', type: [ItemProductDto] })
-  products: ItemProductDto[];
+  @ApiProperty({ name: 'items', description: 'Danh sách sản phẩm', type: [ItemProductDto] })
+  items: ItemProductDto[];
 }

@@ -54,10 +54,11 @@ export class OrderController {
   }
 
   @Get()
+  @ApiQuery({ name: 'status', required: false, type: String })
   @ApiOperationCustom('Order', 'Get', 'Lấy danh sách đơn hàng')
-  async getAllOrder(@Pagination() pagination: PaginationDto) {
+  async getAllOrder(@Pagination() pagination: PaginationDto, @Query('status') status: string) {
     try {
-      return await this.orderService.findAllOrder(pagination);
+      return await this.orderService.findAllOrder(pagination, status);
     } catch (error) {
       throw new BadRequestException(error.message);
     }
@@ -68,10 +69,10 @@ export class OrderController {
   //   return this.orderService.findAll();
   // }
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.orderService.findOne(+id);
-  // }
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.orderService.findOne(id);
+  }
 
   // @Patch(':id')
   // update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {

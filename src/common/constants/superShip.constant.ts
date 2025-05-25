@@ -7,7 +7,7 @@ export const statusSuperShip = [
   {
     key: '2',
     value: 'Chờ Lấy Hàng',
-    statusSys: 'RECEIVED',
+    statusSys: 'WAITING_FOR_PICKUP',
   },
   {
     key: '3',

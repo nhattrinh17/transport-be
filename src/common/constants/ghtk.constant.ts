@@ -2,7 +2,7 @@ export const statusOrderGHTK = [
   { code: -1, description: 'Hủy đơn hàng', statusSys: 'CANCEL' },
   { code: 1, description: 'Chưa tiếp nhận', statusSys: 'UNPROCESSED' },
   { code: 2, description: 'Đã tiếp nhận', statusSys: 'RECEIVED' },
-  { code: 3, description: 'Đã lấy hàng/Đã nhập kho', statusSys: 'RECEIVED' },
+  { code: 3, description: 'Đã lấy hàng/Đã nhập kho', statusSys: 'IN_STOCK' },
   { code: 4, description: 'Đã điều phối giao hàng/Đang giao hàng', statusSys: 'SHIPPING' },
   { code: 5, description: 'Đã giao hàng/Chưa đối soát', statusSys: 'SHIPPED' },
   { code: 6, description: 'Đã đối soát', statusSys: 'SHIPPED' },

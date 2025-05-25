@@ -56,8 +56,8 @@ class ItemProductFast {
 
   @Transform(({ value }) => Number(value))
   @IsNumber()
-  @ApiProperty({ name: 'moneyCollection', type: Number, description: 'Giá trị sản phẩm với ghn tối đa là 5tr ' })
-  moneyCollection: number;
+  @ApiProperty({ name: 'collection', type: Number, description: 'Giá trị sản phẩm với ghn tối đa là 5tr ' })
+  collection: number;
 
   @IsNumberString()
   @ApiProperty({ name: 'quantity', type: String, description: 'Số lượng sp' })
@@ -207,33 +207,33 @@ export class GetFeeDto {
 
   @Transform(({ value }) => Number(value))
   @IsNumber()
-  @ApiProperty({ name: 'productWeight', type: Number, description: 'Khối lượng sản phẩm với ghn thì tối đa là 1t6' })
-  productWeight: number;
+  @ApiProperty({ name: 'weight', type: Number, description: 'Khối lượng sản phẩm với ghn thì tối đa là 1t6' })
+  weight: number;
 
   @Transform(({ value }) => Number(value))
   @IsNumber()
-  @ApiProperty({ name: 'productLength', type: Number, description: 'Chiều dài đơn hàng với ghn tối đa là 2m' })
-  productLength: number;
+  @ApiProperty({ name: 'length', type: Number, description: 'Chiều dài đơn hàng với ghn tối đa là 2m' })
+  length: number;
 
   @Transform(({ value }) => Number(value))
   @IsNumber()
-  @ApiProperty({ name: 'productWith', type: Number, description: 'Chiều rộng đơn hàng với ghn tối đa là 2m' })
-  productWith: number;
+  @ApiProperty({ name: 'width', type: Number, description: 'Chiều rộng đơn hàng với ghn tối đa là 2m' })
+  width: number;
 
   @Transform(({ value }) => Number(value))
   @IsNumber()
-  @ApiProperty({ name: 'productHeight', type: Number, description: 'Chiều cao đơn hàng với ghn tối đa là 2m' })
-  productHeight: number;
+  @ApiProperty({ name: 'height', type: Number, description: 'Chiều cao đơn hàng với ghn tối đa là 2m' })
+  height: number;
 
   @Transform(({ value }) => Number(value))
   @IsNumber()
-  @ApiProperty({ name: 'productPrice', type: Number, description: 'Giá trị sản phẩm với ghn tối đa là 5tr ' })
-  productPrice: number;
+  @ApiProperty({ name: 'value', type: Number, description: 'Giá trị sản phẩm với ghn tối đa là 5tr ' })
+  value: number;
 
   @Transform(({ value }) => Number(value))
   @IsNumber()
-  @ApiProperty({ name: 'moneyCollection', type: Number, description: 'Số tiền thu hộ với ghn tối đa là 10tr' })
-  moneyCollection: number;
+  @ApiProperty({ name: 'collection', type: Number, description: 'Số tiền thu hộ với ghn tối đa là 10tr' })
+  collection: number;
 
   @IsArray()
   @ApiProperty({ name: 'items', type: [ItemProductDto], description: 'Danh sách sản phẩm' })
@@ -313,16 +313,16 @@ export class GetServiceAvailableDto {
 
   @Transform(({ value }) => Number(value))
   @IsNumber()
-  @ApiProperty({ name: 'productWeight', type: Number, description: 'Khối lượng sản phẩm' })
-  productWeight: number;
+  @ApiProperty({ name: 'weight', type: Number, description: 'Khối lượng sản phẩm' })
+  weight: number;
 
   @Transform(({ value }) => Number(value))
   @IsNumber()
-  @ApiProperty({ name: 'productPrice', type: Number, description: 'Giá trị sản phẩm' })
-  productPrice: number;
+  @ApiProperty({ name: 'value', type: Number, description: 'Giá trị sản phẩm' })
+  value: number;
 
   @Transform(({ value }) => Number(value))
   @IsNumber()
-  @ApiProperty({ name: 'moneyCollection', type: Number, description: 'Số tiền thu hộ' })
-  moneyCollection: number;
+  @ApiProperty({ name: 'collection', type: Number, description: 'Số tiền thu hộ' })
+  collection: number;
 }

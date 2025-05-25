@@ -25,11 +25,7 @@ export class OrderRepository extends BaseRepositoryAbstract<Order> implements Or
     const queryBuilder = this.OrderRepository.createQueryBuilder('order').leftJoinAndSelect('order.detail', 'detail'); // 👈 Join sang bảng OrderDetail
 
     // WHERE
-    if (condition) {
-      Object.entries(condition).forEach(([key, value]) => {
-        queryBuilder.andWhere(`order.${key} = :${key}`, { [key]: value });
-      });
-    }
+    queryBuilder.where(condition);
 
     // SELECT projection nếu có
     if (options?.projection?.length) {
@@ -56,5 +52,9 @@ export class OrderRepository extends BaseRepositoryAbstract<Order> implements Or
 
   findCountOrderByStatus(): Promise<any> {
     return this.OrderRepository.createQueryBuilder('order').select('order.status', 'status').addSelect('COUNT(order.id)', 'count').groupBy('order.status').getRawMany();
+  }
+
+  findOneByIdAndJoin(id: string): Promise<Order | null> {
+    return this.OrderRepository.createQueryBuilder('order').leftJoinAndSelect('order.detail', 'detail').leftJoinAndSelect('order.log', 'log').where('order.id = :id', { id }).getOne();
   }
 }

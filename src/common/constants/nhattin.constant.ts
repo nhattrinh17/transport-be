@@ -51,13 +51,13 @@ export const StatusOrderNhatTin = [
     id: 2,
     code: 'Waiting',
     name: 'Chờ lấy hàng',
-    statusSys: 'RECEIVED',
+    statusSys: 'WAITING_FOR_PICKUP',
   },
   {
     id: 3,
     code: 'KCB',
     name: 'Đã lấy hàng',
-    statusSys: 'SHIPPING',
+    statusSys: 'IN_STOCK',
   },
   {
     id: 4,

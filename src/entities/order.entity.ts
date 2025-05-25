@@ -40,6 +40,9 @@ export class Order extends BaseEntity {
   paymentMethod: PaymentMethodOrder;
 
   @Column({ nullable: true })
+  senderName: string;
+
+  @Column({ nullable: true })
   senderAddress: string;
 
   @Column()

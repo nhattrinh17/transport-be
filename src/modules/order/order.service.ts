@@ -63,6 +63,7 @@ export class OrderService {
     const {
       unit,
       type,
+      senderName,
       senderPhone,
       senderAddress,
       senderWard,
@@ -80,7 +81,7 @@ export class OrderService {
       paymentMethod,
       configReceive,
       note,
-      products,
+      items,
     } = dto;
     if (dto.type == 'NORMAL') throw new Error(messageResponseError.order.ship_method_not_supported);
     const payer = handleGetPaymentMethod(unit, paymentMethod);
@@ -106,7 +107,8 @@ export class OrderService {
       soc: generateOrderCode(type),
       note: note,
       product_type: '2',
-      products: products.map((item) => {
+      senderName,
+      items: items.map((item) => {
         return {
           sku: item.code,
           name: item.name,
@@ -173,7 +175,7 @@ export class OrderService {
       note,
       paymentMethod,
       configReceive,
-      products,
+      items,
     } = dto;
     const orderCodeClient = generateOrderCode(type);
     const data = {
@@ -193,9 +195,9 @@ export class OrderService {
       RECEIVER_WARD: Number(receiverWard),
       RECEIVER_DISTRICT: Number(receiverDistrict),
       RECEIVER_PROVINCE: Number(receiverProvince),
-      PRODUCT_NAME: products?.length > 1 ? 'Nhiều sản phẩm' : products[0].name,
-      PRODUCT_DESCRIPTION: products?.length > 1 ? 'Nhiều sản phẩm' : products[0].name,
-      PRODUCT_QUANTITY: products.reduce((acc, item) => acc + item.quantity, 0),
+      PRODUCT_NAME: items?.length > 1 ? 'Nhiều sản phẩm' : items[0].name,
+      PRODUCT_DESCRIPTION: items?.length > 1 ? 'Nhiều sản phẩm' : items[0].name,
+      PRODUCT_QUANTITY: items.reduce((acc, item) => acc + item.quantity, 0),
       PRODUCT_PRICE: value,
       PRODUCT_WEIGHT: weight,
       PRODUCT_LENGTH: length,
@@ -216,7 +218,7 @@ export class OrderService {
       MONEY_FEEOTHER: 0,
       MONEY_TOTALVAT: 0,
       MONEY_TOTAL: 0,
-      LIST_ITEM: products.map((item) => {
+      LIST_ITEM: items.map((item) => {
         return { PRODUCT_NAME: item.name, PRODUCT_PRICE: item.price, PRODUCT_WEIGHT: item.weight, PRODUCT_QUANTITY: item.quantity };
       }),
     };
@@ -233,6 +235,7 @@ export class OrderService {
           soc: orderCodeClient,
           configReceive,
           paymentMethod,
+          senderName,
           senderAddress,
           senderPhone,
           name: receiverName,
@@ -275,7 +278,7 @@ export class OrderService {
       note,
       paymentMethod,
       configReceive,
-      products,
+      items,
     } = dto;
     if (type != 'NORMAL') throw new Error(messageResponseError.order.ship_method_not_supported);
     const orderCodeClient = generateOrderCode(type);
@@ -305,9 +308,9 @@ export class OrderService {
       cod_failed_amount: 0,
       // "pick_station_id": 1444,
       insurance_value: value,
-      service_type_id: products.reduce((acc, item) => acc + item.weight, 0) > 20000 ? 5 : 2,
+      service_type_id: items.reduce((acc, item) => acc + item.weight, 0) > 20000 ? 5 : 2,
       coupon: null,
-      items: products,
+      items: items,
     };
 
     try {
@@ -324,6 +327,7 @@ export class OrderService {
             soc: orderCodeClient,
             configReceive,
             paymentMethod,
+            senderName,
             senderAddress,
             senderPhone,
             name: receiverName,
@@ -365,7 +369,7 @@ export class OrderService {
       note,
       paymentMethod,
       configReceive,
-      products,
+      items,
     } = dto;
     if (type != 'NORMAL') throw new Error(messageResponseError.order.ship_method_not_supported);
     const orderCodeClient = generateOrderCode(type);
@@ -391,7 +395,7 @@ export class OrderService {
         value: value,
         pick_option: 'cod',
       },
-      products: products.map((item) => {
+      items: items.map((item) => {
         return {
           name: item.name,
           weight: item.weight / 1000,
@@ -415,6 +419,7 @@ export class OrderService {
             soc: orderCodeClient,
             configReceive,
             paymentMethod,
+            senderName,
             senderAddress,
             senderPhone,
             name: receiverName,
@@ -507,6 +512,7 @@ export class OrderService {
           soc: orderCodeClient,
           configReceive,
           paymentMethod,
+          senderName,
           senderAddress,
           senderPhone,
           name: receiverName,
@@ -562,6 +568,7 @@ export class OrderService {
           soc: orderCodeClient,
           configReceive: '',
           paymentMethod: '',
+          senderName,
           senderAddress,
           senderPhone,
           name: receiverName,
@@ -688,13 +695,18 @@ export class OrderService {
     return this.orderRepository.findCountOrderByStatus();
   }
 
-  findAllOrder(pagination: PaginationDto) {
-    return this.orderRepository.findAll(
-      {
-        // deletedAt: Not(null),
-      },
-      { ...pagination },
-    );
+  findAllOrder(pagination: PaginationDto, status?: string) {
+    const filter = {};
+    if (status) {
+      filter['status'] = status;
+    }
+    return this.orderRepository.findAll(filter, { ...pagination });
+  }
+
+  async findOne(id: string) {
+    const order = await this.orderRepository.findOneByIdAndJoin(id);
+    if (!order) throw new Error(messageResponseError.order.order_not_found);
+    return order;
   }
 
   async cancel(id: string) {
@@ -714,13 +726,13 @@ export class OrderService {
             })
           ).data;
           if (!removeOrderViettel.error) {
-            // Delete order in viettel post
+            // cancel order in viettel post
             (await this.axiosInsService.axiosInstanceViettel()).post('/v2/order/UpdateOrder', {
               TYPE: 11,
               ORDER_NUMBER: order.code,
               NOTE: 'Xóa đơn hàng',
             });
-            // Delete order in database
+            // cancel order in database
             isRemove = true;
           }
           break;
@@ -735,19 +747,21 @@ export class OrderService {
           if (removeOrder.success) {
             isRemove = true;
           } else {
-            throw new Error(messageResponseError.order.delete_order_ghtk_error);
+            throw new Error(messageResponseError.order.cancel_order_ghtk_error);
           }
+          break;
         case OrderUnitConstant.NT:
           const removeOrderNhatTin = (await (await this.axiosInsService.axiosInstanceNhatTin()).post('v1/bill/destroy', { bill_code: [order.code] })).data;
           if (removeOrderNhatTin.success) {
             isRemove = true;
           }
+          break;
         case OrderUnitConstant.LALAMOVE:
           try {
-            const removeOrderLalamove = (await this.axiosInsService.callApiLALAMOVE('DELETE', `/v3/orders/${order.code}`)).data;
+            const removeOrderLalamove = (await this.axiosInsService.callApiLALAMOVE('cancel', `/v3/orders/${order.code}`)).data;
             isRemove = true;
           } catch (error) {
-            throw new Error(messageResponseError.order.delete_order_lalamove_error);
+            throw new Error(messageResponseError.order.cancel_order_lalamove_error);
           }
           break;
         case OrderUnitConstant.SUPERSHIP:
@@ -755,7 +769,7 @@ export class OrderService {
           if (removeOrderSuperShip.status == 'Success') {
             isRemove = true;
           } else {
-            throw new Error(removeOrderSuperShip?.errors?.message || messageResponseError.order.delete_order_supership_error);
+            throw new Error(removeOrderSuperShip?.errors?.message || messageResponseError.order.cancel_order_supership_error);
           }
           break;
         default:
@@ -777,10 +791,10 @@ export class OrderService {
         ]);
         return { message: 'Hủy đơn hàng thành công' };
       } else {
-        throw new Error(messageResponseError.order.order_not_found);
+        throw new Error(messageResponseError.order.cancel_order_error);
       }
     } catch (error) {
-      throw new Error(error?.response?.data?.message || error.message || messageResponseError.order.delete_order_error);
+      throw new Error(error?.response?.data?.message || error.message || messageResponseError.order.cancel_order_error);
     }
   }
 }
