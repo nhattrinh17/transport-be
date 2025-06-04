@@ -5,6 +5,8 @@ import { UpdateOrderDto } from './dto/update-order.dto';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { ApiOperationCustom } from 'src/custom-decorator';
 import { Pagination, PaginationDto } from '@common/decorators';
+import { QueryOrderDto, QueryOrderGetCountDto } from './dto/query-order.dto';
+import { IsOptional } from 'class-validator';
 
 @ApiTags('Order')
 @Controller('order')
@@ -44,10 +46,14 @@ export class OrderController {
   }
 
   @Get('count')
+  @IsOptional()
+  @ApiQuery({ name: 'startDate', required: false, type: String, description: 'Ngày bắt đầu' })
+  @IsOptional()
+  @ApiQuery({ name: 'endDate', required: false, type: String, description: 'Ngày kết thúc' })
   @ApiOperationCustom('Order', 'Get', 'Lấy số lượng đơn hàng theo trạng thái')
-  async getAllCount() {
+  async getAllCount(@Query() dto: QueryOrderGetCountDto) {
     try {
-      return await this.orderService.findCountOrderByStatus();
+      return await this.orderService.findCountOrderByStatus(dto);
     } catch (error) {
       throw new BadRequestException(error.message);
     }
@@ -55,10 +61,16 @@ export class OrderController {
 
   @Get()
   @ApiQuery({ name: 'status', required: false, type: String })
+  @ApiQuery({ name: 'unit', required: false, type: String, description: 'Đơn vị vận chuyển' })
+  @ApiQuery({ name: 'paymentMethod', required: false, type: String, description: 'Hình thức thanh toán' })
+  @ApiQuery({ name: 'isPinter', required: false, type: Number, description: 'Check in vận đơn' })
+  @ApiQuery({ name: 'configReceive', required: false, type: String, description: 'Hình thức nhận hàng' })
+  @ApiQuery({ name: 'startDate', required: false, type: String, description: 'Ngày bắt đầu' })
+  @ApiQuery({ name: 'endDate', required: false, type: String, description: 'Ngày kết thúc' })
   @ApiOperationCustom('Order', 'Get', 'Lấy danh sách đơn hàng')
-  async getAllOrder(@Pagination() pagination: PaginationDto, @Query('status') status: string) {
+  async getAllOrder(@Pagination() pagination: PaginationDto, @Query() dto: QueryOrderDto) {
     try {
-      return await this.orderService.findAllOrder(pagination, status);
+      return await this.orderService.findAllOrder(pagination, dto);
     } catch (error) {
       throw new BadRequestException(error.message);
     }

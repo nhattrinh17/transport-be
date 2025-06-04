@@ -12,7 +12,7 @@ export class OrderRepository extends BaseRepositoryAbstract<Order> implements Or
   }
 
   findAll(
-    condition: object | any[],
+    condition: any,
     options?: {
       projection: (keyof Order)[];
       sort: string;
@@ -25,7 +25,13 @@ export class OrderRepository extends BaseRepositoryAbstract<Order> implements Or
     const queryBuilder = this.OrderRepository.createQueryBuilder('order').leftJoinAndSelect('order.detail', 'detail'); // 👈 Join sang bảng OrderDetail
 
     // WHERE
-    queryBuilder.where(condition);
+    if (!condition?.isPinter) {
+      queryBuilder.where(condition);
+    } else {
+      queryBuilder.where('detail.isPinter = :isPinter', { isPinter: condition.isPinter });
+      delete condition.isPinter;
+      queryBuilder.andWhere(condition);
+    }
 
     // SELECT projection nếu có
     if (options?.projection?.length) {
@@ -50,8 +56,8 @@ export class OrderRepository extends BaseRepositoryAbstract<Order> implements Or
     }));
   }
 
-  findCountOrderByStatus(): Promise<any> {
-    return this.OrderRepository.createQueryBuilder('order').select('order.status', 'status').addSelect('COUNT(order.id)', 'count').groupBy('order.status').getRawMany();
+  findCountOrderByStatus(filter: any): Promise<any> {
+    return this.OrderRepository.createQueryBuilder('order').where(filter).select('order.status', 'status').addSelect('COUNT(order.id)', 'count').groupBy('order.status').getRawMany();
   }
 
   findOneByIdAndJoin(id: string): Promise<Order | null> {

@@ -223,6 +223,7 @@ export class FeeService {
       )?.data,
       (await (await this.axiosInsService.axiosInstanceNhatTin()).post(`/v1/bill/calc-fee`, dataNhatTin)).data,
     ]);
+    // console.log('🚀 ~ FeeService ~ calculateFeeFaster ~ resSuperShip:', resSuperShip);
 
     return {
       lalamove: resLala,

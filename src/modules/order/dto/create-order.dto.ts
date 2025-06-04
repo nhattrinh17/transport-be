@@ -1,4 +1,5 @@
 import { ConfigReceiveOrder, PaymentMethodOrder } from '@common/enums';
+import { IsStringOrNumber } from '@common/pipes';
 import { ItemProductDto } from '@modules/fee/dto/create-fee.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
@@ -18,9 +19,10 @@ export class CreateOrderDto {
   @ApiProperty({ name: 'quotationId', description: 'Id báo giá lalamove', example: 'VTP123456' })
   quotationId: string;
 
-  @IsString()
+  @IsOptional()
+  @IsStringOrNumber()
   @ApiProperty({ name: 'serviceId', description: 'Loại dịch vụ vận chuyển', example: 'VTP123456' })
-  serviceId: string;
+  serviceId: string | number;
 
   @IsString()
   @IsOptional()
@@ -36,15 +38,15 @@ export class CreateOrderDto {
   @ApiProperty({ name: 'senderAddress', description: 'Địa chỉ người gửi tong trường hợp là lavamove sẽ là stopId', example: '123 ABC,...' })
   senderAddress: string;
 
-  @IsString()
+  @IsStringOrNumber()
   @ApiProperty({ name: 'senderProvince', description: 'Tỉnh thành phố', example: 'COD' })
   senderProvince: string;
 
-  @IsString()
+  @IsStringOrNumber()
   @ApiProperty({ name: 'senderDistrict', description: 'Quận huyện', example: 'COD' })
   senderDistrict: string;
 
-  @IsString()
+  @IsStringOrNumber()
   @ApiProperty({ name: 'senderWard', description: 'Phường xã', example: 'COD' })
   senderWard: string;
 
@@ -61,15 +63,15 @@ export class CreateOrderDto {
   @ApiProperty({ name: 'receiverAddress', description: 'Địa chỉ người nhận tong trường hợp là lavamove sẽ là stopId', example: '123 ABC,...' })
   receiverAddress: string;
 
-  @IsString()
+  @IsStringOrNumber()
   @ApiProperty({ name: 'receiverProvince', description: 'Tỉnh thành phố', example: 'COD' })
   receiverProvince: string;
 
-  @IsString()
+  @IsStringOrNumber()
   @ApiProperty({ name: 'receiverDistrict', description: 'Quận huyện', example: 'COD' })
   receiverDistrict: string;
 
-  @IsString()
+  @IsStringOrNumber()
   @ApiProperty({ name: 'receiverWard', description: 'Phường xã', example: 'COD' })
   receiverWard: string;
 

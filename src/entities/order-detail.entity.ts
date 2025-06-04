@@ -26,6 +26,9 @@ export class OrderDetail extends BaseEntity {
   @Column({ nullable: true })
   driverPhone: string;
 
+  @Column({ default: false })
+  isPinter: boolean;
+
   @Column({ default: 0 })
   weight: number;
 

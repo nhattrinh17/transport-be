@@ -29,7 +29,7 @@ export const typeOrmConfig: DataSourceOptions = {
   migrations: [join(__dirname, '../migrations/*{.ts,.js}')],
   synchronize: false,
   migrationsRun: process.env.MIGRATIONS_RUN as any,
-  logging: false,
+  logging: true,
 };
 
 const connectionSource = new DataSource({ ...typeOrmConfig });

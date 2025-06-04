@@ -12,6 +12,8 @@ import { StatusOrderNhatTin } from '@common/constants/nhattin.constant';
 import { StatusOrderLavaMove } from '@common/constants/lalamove.constant';
 import { PaginationDto } from '@common/decorators';
 import { OrderLogService } from '@modules/order-log/order-log.service';
+import { QueryOrderDto, QueryOrderGetCountDto } from './dto/query-order.dto';
+import { Between } from 'typeorm';
 
 @Injectable()
 export class OrderService {
@@ -108,7 +110,7 @@ export class OrderService {
       note: note,
       product_type: '2',
       senderName,
-      items: items.map((item) => {
+      products: items.map((item) => {
         return {
           sku: item.code,
           name: item.name,
@@ -276,6 +278,7 @@ export class OrderService {
       width,
       height,
       note,
+      serviceId,
       paymentMethod,
       configReceive,
       items,
@@ -308,7 +311,8 @@ export class OrderService {
       cod_failed_amount: 0,
       // "pick_station_id": 1444,
       insurance_value: value,
-      service_type_id: items.reduce((acc, item) => acc + item.weight, 0) > 20000 ? 5 : 2,
+      service_type_id: serviceId,
+      // service_type_id: items.reduce((acc, item) => acc + item.weight, 0) > 20000 ? 5 : 2,
       coupon: null,
       items: items,
     };
@@ -341,9 +345,11 @@ export class OrderService {
           },
           detail: { note, isPODEnabled: false, shareLink: '', weight, mainFee: fee?.main_service, otherFee: fee?.station_do + fee?.station_pu, surcharge: 0, collectionFee: 0, vat: 0, r2sFee: fee?.r2s, returnFee: fee?.return },
         };
+      } else {
+        throw new Error(resGHN?.code_message || messageResponseError.order.create_order_ghn_error);
       }
     } catch (error) {
-      throw new Error(error?.response?.data?.code_message || messageResponseError.order.create_order_ghn_error);
+      throw new Error(error?.message || messageResponseError.order.create_order_ghn_error);
     }
   }
 
@@ -395,7 +401,7 @@ export class OrderService {
         value: value,
         pick_option: 'cod',
       },
-      items: items.map((item) => {
+      products: items.map((item) => {
         return {
           name: item.name,
           weight: item.weight / 1000,
@@ -638,6 +644,7 @@ export class OrderService {
 
   async printOrder(id: string, size: string, original: string) {
     try {
+      let urlPrint = '';
       const order = await this.orderRepository.findOneById(id, ['unit', 'code', 'id']);
       if (!order) throw new Error(messageResponseError.order.order_not_found);
       switch (order.unit) {
@@ -653,9 +660,8 @@ export class OrderService {
             })
           ).data;
           if (resViettel.error) throw new Error(messageResponseError.order.cannot_print_order);
-          return {
-            data: resViettel.data,
-          };
+          urlPrint = resViettel.data;
+          break;
         case OrderUnitConstant.GHN:
           const resToken = (
             await (
@@ -664,41 +670,76 @@ export class OrderService {
               order_codes: [order.code],
             })
           ).data;
-          return {
-            data: `https://online-gateway.ghn.vn/a5/public-api/print${size || 'A5'}?token=${resToken?.data?.token}`,
-          };
+          urlPrint = `https://online-gateway.ghn.vn/a5/public-api/print${size || 'A5'}?token=${resToken?.data?.token}`;
+          break;
         case OrderUnitConstant.GHTK:
           const resGHTK = (await (await this.axiosInsService.axiosInstanceGHTK()).get(`/services/label/${order.code}?original=${original || 'portrait'}&paper_size=${size || 'A6'}`)).data;
           return {
             data: resGHTK?.data,
           };
         case OrderUnitConstant.NT:
-          return {
-            data: `${process.env.URL_BASE_PRINT_NHATTIN}/v1/bill/print?do_code=${order.code}&partner_id=${process.env.PARTNER_NHATTIN}`,
-          };
+          urlPrint = `${process.env.URL_BASE_PRINT_NHATTIN}/v1/bill/print?do_code=${order.code}&partner_id=${process.env.PARTNER_NHATTIN}`;
+          break;
         case OrderUnitConstant.SUPERSHIP:
           const resSuperShip = (await (await this.axiosInsService.axiosInstanceSuperShip()).post('/v1/partner/orders/token', { code: [order.code] })).data;
           if (resSuperShip.status == 'Success') {
-            return {
-              data: `${process.env.URL_BASE_PRINT_SUPERSHIP}?token=${resSuperShip.results?.token}&size=${size || 'A5'}`,
-            };
+            urlPrint = `${process.env.URL_BASE_PRINT_SUPERSHIP}?token=${resSuperShip.results?.token}&size=${size || 'A5'}`;
+            break;
           } else {
             throw new Error(messageResponseError.order.cannot_print_order);
           }
       }
+      if (!urlPrint) throw new Error(messageResponseError.order.cannot_print_order);
+      this.orderDetailRepository.findOneAndUpdate(
+        {
+          orderId: id,
+        },
+        {
+          isPinter: true,
+        },
+      );
+      return {
+        data: urlPrint,
+      };
     } catch (error) {
       throw new Error(messageResponseError.order.cannot_print_order);
     }
   }
 
-  findCountOrderByStatus() {
-    return this.orderRepository.findCountOrderByStatus();
+  findCountOrderByStatus(filterDto: QueryOrderGetCountDto) {
+    const { startDate, endDate, unit } = filterDto;
+    const filter = {};
+    if (unit) {
+      filter['unit'] = unit;
+    }
+    if (startDate && endDate) {
+      filter['createdAt'] = Between(new Date(startDate), new Date(endDate));
+    }
+    // console.log('🚀 ~ OrderService ~ findCountOrderByStatus ~ filter:', filter);
+
+    return this.orderRepository.findCountOrderByStatus(filter);
   }
 
-  findAllOrder(pagination: PaginationDto, status?: string) {
+  findAllOrder(pagination: PaginationDto, dto: QueryOrderDto) {
     const filter = {};
+    const { startDate, endDate, status, unit, paymentMethod, isPinter, configReceive } = dto;
     if (status) {
       filter['status'] = status;
+    }
+    if (unit) {
+      filter['unit'] = unit;
+    }
+    if (paymentMethod) {
+      filter['paymentMethod'] = paymentMethod;
+    }
+    if (isPinter) {
+      filter['isPinter'] = isPinter;
+    }
+    if (configReceive) {
+      filter['configReceive'] = configReceive;
+    }
+    if (startDate && endDate) {
+      filter['createdAt'] = Between(new Date(startDate), new Date(endDate));
     }
     return this.orderRepository.findAll(filter, { ...pagination });
   }
@@ -758,7 +799,8 @@ export class OrderService {
           break;
         case OrderUnitConstant.LALAMOVE:
           try {
-            const removeOrderLalamove = (await this.axiosInsService.callApiLALAMOVE('cancel', `/v3/orders/${order.code}`)).data;
+            const removeOrderLalamove = (await this.axiosInsService.callApiLALAMOVE('DELETE', `/v3/orders/${order.code}`)).data;
+            console.log('🚀 ~ OrderService ~ cancel ~ /v3/orders/${order.code}:', `/v3/orders/${order.code}`);
             isRemove = true;
           } catch (error) {
             throw new Error(messageResponseError.order.cancel_order_lalamove_error);
