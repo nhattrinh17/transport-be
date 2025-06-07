@@ -3,12 +3,19 @@ import { WarehouseService } from './warehouse.service';
 import { CreateWarehouseDetailDto, CreateWarehouseDto } from './dto/create-warehouse.dto';
 import { UpdateWarehouseDto } from './dto/update-warehouse.dto';
 import { ApiTags } from '@nestjs/swagger';
-import { ApiOperationCustom } from 'src/custom-decorator';
+import { ApiOperationCustom, Pagination } from 'src/custom-decorator';
+import { PaginationDto } from '@common/decorators';
 
 @ApiTags('Warehouse')
 @Controller('warehouse')
 export class WarehouseController {
   constructor(private readonly warehouseService: WarehouseService) {}
+
+  @Get()
+  @ApiOperationCustom('Warehouse', 'GET', 'Lấy danh sách kho hàng')
+  findAll(@Pagination() pagination: PaginationDto) {
+    return this.warehouseService.findAll(pagination);
+  }
 
   @Post()
   @ApiOperationCustom('Warehouse', 'POST', 'Tạo kho hàng')

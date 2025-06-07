@@ -5,178 +5,181 @@ import { WarehouseDetailRepositoryInterface, WarehouseRepositoryInterface } from
 import { AxiosInsService } from '@modules/axiosIns/axiosIns.service';
 import { messageResponseError } from '@common/constants';
 import { OrderUnitConstant } from '@common/constants/order.constant';
+import { PaginationDto } from '@common/decorators';
 
 @Injectable()
 export class WarehouseService implements OnModuleInit {
   constructor(
     @Inject('WarehouseRepositoryInterface')
-    private readonly warehouseRepositoryInterface: WarehouseRepositoryInterface,
+    private readonly warehouseRepository: WarehouseRepositoryInterface,
     @Inject('WarehouseDetailRepositoryInterface')
     private readonly warehouseDetailRepositoryInterface: WarehouseDetailRepositoryInterface,
     private readonly axiosInsService: AxiosInsService,
   ) {}
 
-  onModuleInit() {}
+  // onModuleInit() {}
 
-  // async onModuleInit() {
-  //   const [dataViettel, dataGHN, dataGHTK, dataSS] = await Promise.all([
-  //     (await (await this.axiosInsService.axiosInstanceViettel()).get('/user/listInventory')).data,
-  //     (await (await this.axiosInsService.axiosInstanceGHN()).get('/v2/shop/all')).data,
-  //     (await (await this.axiosInsService.axiosInstanceGHTK()).get('/services/shipment/list_pick_add')).data,
-  //     (await (await this.axiosInsService.axiosInstanceSuperShip()).get('/v1/partner/warehouses')).data,
-  //   ]);
+  async onModuleInit() {
+    const [dataViettel, dataGHN, dataGHTK, dataSS] = await Promise.all([
+      (await (await this.axiosInsService.axiosInstanceViettel()).get('/v2/user/listInventory')).data,
+      (await (await this.axiosInsService.axiosInstanceGHN()).get('/v2/shop/all')).data,
+      (await (await this.axiosInsService.axiosInstanceGHTK()).get('/services/shipment/list_pick_add')).data,
+      (await (await this.axiosInsService.axiosInstanceSuperShip()).get('/v1/partner/warehouses')).data,
+    ]);
+    console.log('🚀 ~ WarehouseService ~ onModuleInit ~ dataViettel:', dataViettel);
 
-  //   const dataWareHouse: CheckAndCreateWarehouseAndDetailDto[] = [];
-  //   dataViettel?.data?.forEach((i) => {
-  //     dataWareHouse.push({
-  //       name: i.name,
-  //       address: i.address,
-  //       phone: i.phone,
-  //       personCharge: i?.personCharge,
-  //       province: i.province,
-  //       district: i.district,
-  //       ward: i.ward,
-  //       details: [
-  //         {
-  //           type: OrderUnitConstant.VIETTEL,
-  //           code: i.shop_id,
-  //           cusId: i.cusId,
-  //           provinceId: i.provinceId,
-  //           districtId: i.districtId,
-  //           wardId: i.wardId,
-  //         },
-  //       ],
-  //     });
-  //   });
+    const dataWareHouse: CheckAndCreateWarehouseAndDetailDto[] = [];
+    dataViettel?.data?.forEach((i) => {
+      console.log('🚀 ~ WarehouseService ~ dataViettel?.data?.forEach ~ i:', i);
+      dataWareHouse.push({
+        name: i.name,
+        address: i.address,
+        phone: i.phone,
+        personCharge: i?.personCharge,
+        province: i.province,
+        district: i.district,
+        ward: i.ward,
+        details: [
+          {
+            type: OrderUnitConstant.VIETTEL,
+            code: i.shop_id,
+            cusId: i.cusId,
+            provinceId: i.provinceId,
+            districtId: i.districtId,
+            wardId: i.wardsId,
+          },
+        ],
+      });
+    });
 
-  //   dataGHN?.data?.shops?.forEach((i) => {
-  //     const checkWareHouse = dataWareHouse.find((ware) => ware.name === i.name);
-  //     if (checkWareHouse) {
-  //       checkWareHouse.address = i.address || checkWareHouse.address;
-  //       checkWareHouse.province = i.province_name || checkWareHouse.province;
-  //       checkWareHouse.district = i.district_name || checkWareHouse.district;
-  //       checkWareHouse.ward = i.ward_name || checkWareHouse.ward;
-  //       checkWareHouse.details.push({
-  //         type: OrderUnitConstant.GHN,
-  //         code: i._id,
-  //         cusId: i.client_id,
-  //         provinceId: '',
-  //         districtId: i.district_id,
-  //         wardId: i.ward_code,
-  //       });
-  //     } else {
-  //       dataWareHouse.push({
-  //         name: i.name,
-  //         address: i.address,
-  //         phone: i.phone,
-  //         personCharge: i?.personCharge,
-  //         province: i?.province,
-  //         district: i?.district,
-  //         ward: i?.ward,
-  //         details: [
-  //           {
-  //             type: OrderUnitConstant.GHN,
-  //             code: i._id,
-  //             cusId: i.client_id,
-  //             provinceId: '',
-  //             districtId: i.district_id,
-  //             wardId: i.ward_code,
-  //           },
-  //         ],
-  //       });
-  //     }
-  //   });
+    dataGHN?.data?.shops?.forEach((i) => {
+      const checkWareHouse = dataWareHouse.find((ware) => ware.name === i.name);
+      if (checkWareHouse) {
+        checkWareHouse.address = i.address || checkWareHouse.address;
+        checkWareHouse.province = i.province_name || checkWareHouse.province;
+        checkWareHouse.district = i.district_name || checkWareHouse.district;
+        checkWareHouse.ward = i.ward_name || checkWareHouse.ward;
+        checkWareHouse.details.push({
+          type: OrderUnitConstant.GHN,
+          code: i._id,
+          cusId: i.client_id,
+          provinceId: '',
+          districtId: i.district_id,
+          wardId: i.ward_code,
+        });
+      } else {
+        dataWareHouse.push({
+          name: i.name,
+          address: i.address,
+          phone: i.phone,
+          personCharge: i?.personCharge,
+          province: i?.province,
+          district: i?.district,
+          ward: i?.ward,
+          details: [
+            {
+              type: OrderUnitConstant.GHN,
+              code: i._id,
+              cusId: i.client_id,
+              provinceId: '',
+              districtId: i.district_id,
+              wardId: i.ward_code,
+            },
+          ],
+        });
+      }
+    });
 
-  //   dataGHTK?.data?.forEach((i) => {
-  //     const checkWareHouse = dataWareHouse.find((ware) => ware.name === i.pick_name);
-  //     const dataAddress: string[] = i.address.split(',');
-  //     const province = dataAddress[dataAddress.length - 1].trim();
-  //     const district = dataAddress.find((item) => item.includes('Huyện') || item.includes('Quận')).trim();
-  //     const ward = dataAddress.find((item) => item.includes('Xã') || item.includes('Phường')).trim();
-  //     if (checkWareHouse) {
-  //       checkWareHouse.address = i.address || checkWareHouse.address;
-  //       checkWareHouse.province = province || checkWareHouse.province;
-  //       checkWareHouse.district = district || checkWareHouse.district;
-  //       checkWareHouse.ward = ward || checkWareHouse.ward;
-  //       checkWareHouse.details.push({
-  //         type: OrderUnitConstant.GHTK,
-  //         code: i.pick_address_id,
-  //         cusId: '',
-  //         provinceId: province,
-  //         districtId: district,
-  //         wardId: ward,
-  //       });
-  //     } else {
-  //       dataWareHouse.push({
-  //         name: i.pick_name,
-  //         address: i.address,
-  //         phone: i.pick_tel,
-  //         personCharge: i?.personCharge,
-  //         province: province,
-  //         district: district,
-  //         ward: ward,
-  //         details: [
-  //           {
-  //             type: OrderUnitConstant.GHTK,
-  //             code: i.pick_address_id,
-  //             cusId: '',
-  //             provinceId: '',
-  //             districtId: '',
-  //             wardId: '',
-  //           },
-  //         ],
-  //       });
-  //     }
-  //   });
+    dataGHTK?.data?.forEach((i) => {
+      const checkWareHouse = dataWareHouse.find((ware) => ware.name === i.pick_name);
+      const dataAddress: string[] = i.address.split(',');
+      const province = dataAddress[dataAddress.length - 1]?.trim();
+      const district = dataAddress.find((item) => item.includes('Huyện') || item.includes('Quận'))?.trim();
+      const ward = dataAddress.find((item) => item.includes('Xã') || item.includes('Phường'))?.trim();
+      if (checkWareHouse) {
+        checkWareHouse.address = i.address || checkWareHouse.address;
+        checkWareHouse.province = province || checkWareHouse.province;
+        checkWareHouse.district = district || checkWareHouse.district;
+        checkWareHouse.ward = ward || checkWareHouse.ward;
+        checkWareHouse.details.push({
+          type: OrderUnitConstant.GHTK,
+          code: i.pick_address_id,
+          cusId: '',
+          provinceId: province,
+          districtId: district,
+          wardId: ward,
+        });
+      } else {
+        dataWareHouse.push({
+          name: i.pick_name,
+          address: i.address,
+          phone: i.pick_tel,
+          personCharge: i?.personCharge,
+          province: province,
+          district: district,
+          ward: ward,
+          details: [
+            {
+              type: OrderUnitConstant.GHTK,
+              code: i.pick_address_id,
+              cusId: '',
+              provinceId: '',
+              districtId: '',
+              wardId: '',
+            },
+          ],
+        });
+      }
+    });
 
-  //   dataSS?.results?.forEach((i) => {
-  //     const checkWareHouse = dataWareHouse.find((ware) => ware.name === i.name);
-  //     const dataAddress: string[] = i.formatted_address.split(',');
-  //     const province = dataAddress[dataAddress.length - 1].trim();
-  //     const district = dataAddress.find((item) => item.includes('Huyện') || item.includes('Quận')).trim();
-  //     const ward = dataAddress.find((item) => item.includes('Xã') || item.includes('Phường')).trim();
-  //     if (checkWareHouse) {
-  //       checkWareHouse.details.push({
-  //         type: OrderUnitConstant.SUPERSHIP,
-  //         code: i.code,
-  //         cusId: '',
-  //         provinceId: province || checkWareHouse.province,
-  //         districtId: district || checkWareHouse.district,
-  //         wardId: ward || checkWareHouse.ward,
-  //       });
-  //     } else {
-  //       dataWareHouse.push({
-  //         name: i.name,
-  //         address: i.formatted_address,
-  //         phone: '',
-  //         personCharge: '',
-  //         province: province,
-  //         district: district,
-  //         ward: ward,
-  //         details: [
-  //           {
-  //             type: OrderUnitConstant.SUPERSHIP,
-  //             code: i.code,
-  //             cusId: '',
-  //             provinceId: '',
-  //             districtId: '',
-  //             wardId: '',
-  //           },
-  //         ],
-  //       });
-  //     }
-  //   });
-  //   return this.checkAndCreateWarehouseByName(dataWareHouse);
-  // }
+    dataSS?.results?.forEach((i) => {
+      const checkWareHouse = dataWareHouse.find((ware) => ware.name === i.name);
+      const dataAddress: string[] = i.formatted_address.split(',');
+      const province = dataAddress[dataAddress.length - 1]?.trim();
+      const district = dataAddress.find((item) => item.includes('Huyện') || item.includes('Quận'))?.trim();
+      const ward = dataAddress.find((item) => item.includes('Xã') || item.includes('Phường'))?.trim();
+      if (checkWareHouse) {
+        checkWareHouse.details.push({
+          type: OrderUnitConstant.SUPERSHIP,
+          code: i.code,
+          cusId: '',
+          provinceId: province || checkWareHouse.province,
+          districtId: district || checkWareHouse.district,
+          wardId: ward || checkWareHouse.ward,
+        });
+      } else {
+        dataWareHouse.push({
+          name: i.name,
+          address: i.formatted_address,
+          phone: '',
+          personCharge: '',
+          province: province,
+          district: district,
+          ward: ward,
+          details: [
+            {
+              type: OrderUnitConstant.SUPERSHIP,
+              code: i.code,
+              cusId: '',
+              provinceId: '',
+              districtId: '',
+              wardId: '',
+            },
+          ],
+        });
+      }
+    });
+    return this.checkAndCreateWarehouseByName(dataWareHouse);
+  }
 
   async checkAndCreateWarehouseByName(dto: CheckAndCreateWarehouseAndDetailDto[]) {
     return Promise.all(
       dto.map(async (i) => {
-        let warehouse = await this.warehouseRepositoryInterface.findOneByCondition({
+        let warehouse = await this.warehouseRepository.findOneByCondition({
           name: i.name,
         });
         if (!warehouse) {
-          warehouse = await this.warehouseRepositoryInterface.create(i);
+          warehouse = await this.warehouseRepository.create(i);
         } else {
           await Promise.all(
             i.details.map(async (detail) => {
@@ -198,14 +201,18 @@ export class WarehouseService implements OnModuleInit {
     );
   }
 
+  findAll(pagination: PaginationDto) {
+    return this.warehouseRepository.findAll({}, pagination);
+  }
+
   async create(dto: CreateWarehouseDto) {
-    const checkDuplicate = await this.warehouseRepositoryInterface.findOneByCondition({
+    const checkDuplicate = await this.warehouseRepository.findOneByCondition({
       name: dto.name,
     });
     if (checkDuplicate) {
       throw new Error(messageResponseError.warehouse.warehouse_duplicate);
     }
-    return this.warehouseRepositoryInterface.create(dto);
+    return this.warehouseRepository.create(dto);
   }
 
   async createWarehouseDetail(dto: CreateWarehouseDetailDto) {
@@ -217,7 +224,7 @@ export class WarehouseService implements OnModuleInit {
       if (checkDuplicate) {
         throw new Error(messageResponseError.warehouse.warehouse_detail_duplicate);
       }
-      const warehouse = await this.warehouseRepositoryInterface.findOneByCondition({
+      const warehouse = await this.warehouseRepository.findOneByCondition({
         id: dto.warehouseId,
       });
       let codeWarehouseDetail = '';
@@ -262,7 +269,7 @@ export class WarehouseService implements OnModuleInit {
               name: warehouse.name,
               phone: warehouse.phone,
               contact: warehouse.personCharge,
-              address: warehouse.address?.split(',')[0].trim(),
+              address: warehouse.address?.split(',')[0]?.trim(),
               province: warehouse.province,
               district: warehouse.district,
               commune: warehouse.ward,
@@ -286,13 +293,13 @@ export class WarehouseService implements OnModuleInit {
   }
 
   async getWWarehouseById(id: string) {
-    return this.warehouseRepositoryInterface.findOneById(id);
+    return this.warehouseRepository.findOneById(id);
   }
 
   async update(id: string, updateWarehouseDto: UpdateWarehouseDto) {
-    const warehouse = await this.warehouseRepositoryInterface.findOneById(id);
+    const warehouse = await this.warehouseRepository.findOneById(id);
     if (!warehouse) throw new Error(messageResponseError.warehouse.warehouse_not_found);
-    return this.warehouseRepositoryInterface.findByIdAndUpdate(id, {
+    return this.warehouseRepository.findByIdAndUpdate(id, {
       address: warehouse.address || updateWarehouseDto.address,
       province: warehouse.province || updateWarehouseDto.province,
       district: warehouse.district || updateWarehouseDto.district,
