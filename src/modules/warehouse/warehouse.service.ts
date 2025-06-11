@@ -26,11 +26,9 @@ export class WarehouseService implements OnModuleInit {
       (await (await this.axiosInsService.axiosInstanceGHTK()).get('/services/shipment/list_pick_add')).data,
       (await (await this.axiosInsService.axiosInstanceSuperShip()).get('/v1/partner/warehouses')).data,
     ]);
-    console.log('🚀 ~ WarehouseService ~ onModuleInit ~ dataViettel:', dataViettel);
 
     const dataWareHouse: CheckAndCreateWarehouseAndDetailDto[] = [];
     dataViettel?.data?.forEach((i) => {
-      console.log('🚀 ~ WarehouseService ~ dataViettel?.data?.forEach ~ i:', i);
       dataWareHouse.push({
         name: i.name,
         address: i.address,
@@ -42,7 +40,7 @@ export class WarehouseService implements OnModuleInit {
         details: [
           {
             type: OrderUnitConstant.VIETTEL,
-            code: i.shop_id,
+            code: i.groupaddressId,
             cusId: i.cusId,
             provinceId: i.provinceId,
             districtId: i.districtId,
@@ -220,6 +218,7 @@ export class WarehouseService implements OnModuleInit {
       const checkDuplicate = await this.warehouseDetailRepositoryInterface.findOneByCondition({
         code: dto.code,
         type: dto.type,
+        warehouseId: dto.warehouseId,
       });
       if (checkDuplicate) {
         throw new Error(messageResponseError.warehouse.warehouse_detail_duplicate);
@@ -230,7 +229,7 @@ export class WarehouseService implements OnModuleInit {
       let codeWarehouseDetail = '';
       let cusIdWarehouseDetail = '';
       switch (dto.type) {
-        case 'Viettel':
+        case OrderUnitConstant.VIETTEL:
           const resVT = (
             await (
               await this.axiosInsService.axiosInstanceViettel()
@@ -241,11 +240,13 @@ export class WarehouseService implements OnModuleInit {
               WARDS_ID: dto.wardId,
             })
           ).data;
-          codeWarehouseDetail = resVT?.data[0]?.groupaddressId;
-          cusIdWarehouseDetail = resVT?.data[0]?.cusId;
+          if (resVT) {
+            codeWarehouseDetail = resVT?.data[0]?.groupaddressId;
+            cusIdWarehouseDetail = resVT?.data[0]?.cusId;
+          }
           break;
 
-        case 'GHN':
+        case OrderUnitConstant.GHN:
           const resGHN = (
             await (
               await this.axiosInsService.axiosInstanceGHN()
@@ -259,9 +260,9 @@ export class WarehouseService implements OnModuleInit {
           ).data;
           codeWarehouseDetail = resGHN?.data?.shop_id;
           break;
-        case 'GHTK':
+        case OrderUnitConstant.GHTK:
           break;
-        case 'SuperShip':
+        case OrderUnitConstant.SUPERSHIP:
           const dataSS = (
             await (
               await this.axiosInsService.axiosInstanceSuperShip()
@@ -299,12 +300,7 @@ export class WarehouseService implements OnModuleInit {
   async update(id: string, updateWarehouseDto: UpdateWarehouseDto) {
     const warehouse = await this.warehouseRepository.findOneById(id);
     if (!warehouse) throw new Error(messageResponseError.warehouse.warehouse_not_found);
-    return this.warehouseRepository.findByIdAndUpdate(id, {
-      address: warehouse.address || updateWarehouseDto.address,
-      province: warehouse.province || updateWarehouseDto.province,
-      district: warehouse.district || updateWarehouseDto.district,
-      ward: warehouse.ward || updateWarehouseDto.ward,
-    });
+    return this.warehouseRepository.findByIdAndUpdate(id, updateWarehouseDto);
   }
 
   remove(id: number) {

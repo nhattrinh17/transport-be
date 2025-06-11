@@ -1,26 +1,14 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateWarehouseDto } from './create-warehouse.dto';
 import { IsOptional, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateWarehouseDto {
   @IsString()
   @IsOptional()
-  @ApiProperty({ name: 'address', type: String, example: 'Địa chỉ kho 1', description: 'Địa chỉ kho' })
-  address: string;
+  @ApiProperty({ name: 'personCharge', type: String, example: 'Tên người phụ trách', description: 'Địa chỉ kho' })
+  personCharge: string;
 
   @IsString()
   @IsOptional()
-  @ApiProperty({ name: 'province', type: String, example: 'Tỉnh thành phố', description: 'Tỉnh thành phố' })
-  province?: string;
-
-  @IsString()
-  @IsOptional()
-  @ApiProperty({ name: 'district', type: String, example: 'Quận huyện', description: 'Quận huyện' })
-  district?: string;
-
-  @IsString()
-  @IsOptional()
-  @ApiProperty({ name: 'ward', type: String, example: 'Phường xã', description: 'Phường xã' })
-  ward?: string;
+  @ApiProperty({ name: 'phone', type: String, example: 'Số điện thoại', description: 'Tỉnh thành phố' })
+  phone?: string;
 }

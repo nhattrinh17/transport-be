@@ -9,6 +9,7 @@ import { FeeModule } from '@modules/fee/fee.module';
 import { WarehouseModule } from '@modules/warehouse/warehouse.module';
 import { OrderModule } from '@modules/order/order.module';
 import { WebhookModule } from '@modules/webhook/webhook.module';
+import { DashboardModule } from '@modules/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { WebhookModule } from '@modules/webhook/webhook.module';
     WarehouseModule,
     OrderModule,
     WebhookModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],
