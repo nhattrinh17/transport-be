@@ -42,4 +42,12 @@ export const messageResponseError = {
     api_key_invalid: 'api_key_invalid',
     signature_lalamove_invalid: 'signature_lalamove_invalid',
   },
+  product: {
+    product_duplicate: 'product_duplicate',
+    product_not_found: 'product_not_found',
+  },
+  tag: {
+    tag_duplicate: 'tag_duplicate',
+    tag_not_found: 'tag_not_found',
+  },
 };

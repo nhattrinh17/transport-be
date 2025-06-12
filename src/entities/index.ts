@@ -4,3 +4,6 @@ export * from './warehouse-detail.entity';
 export * from './order.entity';
 export * from './order-detail.entity';
 export * from './order-log.entity';
+export * from './product.entity';
+export * from './tag.entity';
+export * from './product-tag.entity';

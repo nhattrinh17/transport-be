@@ -10,6 +10,8 @@ import { WarehouseModule } from '@modules/warehouse/warehouse.module';
 import { OrderModule } from '@modules/order/order.module';
 import { WebhookModule } from '@modules/webhook/webhook.module';
 import { DashboardModule } from '@modules/dashboard/dashboard.module';
+import { ProductModule } from '@modules/product/product.module';
+import { TagModule } from '@modules/tag/tag.module';
 
 @Module({
   imports: [
@@ -34,6 +36,8 @@ import { DashboardModule } from '@modules/dashboard/dashboard.module';
     OrderModule,
     WebhookModule,
     DashboardModule,
+    ProductModule,
+    TagModule,
   ],
   controllers: [AppController],
   providers: [AppService],

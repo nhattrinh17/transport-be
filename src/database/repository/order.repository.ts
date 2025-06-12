@@ -69,17 +69,17 @@ export class OrderRepository extends BaseRepositoryAbstract<Order> implements Or
       // Tổng đơn COD (collection > 0 và không phải trạng thái CANCEL/RETURN)
       "COUNT(CASE WHEN order.collection > 0 AND order.status NOT IN ('CANCEL', 'RETURN') THEN 1 END) AS totalCodOrders",
 
-      // Số đơn đã thu COD (collection > 0 và trạng thái là 'COMPLETED')
-      "COUNT(CASE WHEN order.collection > 0 AND order.status = 'COMPLETED' THEN 1 END) AS codCollectedOrders",
+      // Số đơn đã thu COD (collection > 0 và trạng thái là 'SHIPPED')
+      "COUNT(CASE WHEN order.collection > 0 AND order.status = 'SHIPPED' THEN 1 END) AS codCollectedOrders",
 
-      // Số đơn chưa thu COD (collection > 0 và trạng thái khác COMPLETED, CANCEL, RETURN)
-      "COUNT(CASE WHEN order.collection > 0 AND order.status NOT IN ('COMPLETED', 'CANCEL', 'RETURN') THEN 1 END) AS codUncollectedOrders",
+      // Số đơn chưa thu COD (collection > 0 và trạng thái khác SHIPPED, CANCEL, RETURN)
+      "COUNT(CASE WHEN order.collection > 0 AND order.status NOT IN ('SHIPPED', 'CANCEL', 'RETURN') THEN 1 END) AS codUncollectedOrders",
 
       // Tổng tiền COD đã thu
-      "SUM(CASE WHEN order.collection > 0 AND order.status = 'COMPLETED' THEN order.collection ELSE 0 END) AS totalCodCollected",
+      "SUM(CASE WHEN order.collection > 0 AND order.status = 'SHIPPED' THEN order.collection ELSE 0 END) AS totalCodCollected",
 
       // Tổng tiền COD chưa thu
-      "SUM(CASE WHEN order.collection > 0 AND order.status NOT IN ('COMPLETED', 'CANCEL', 'RETURN') THEN order.collection ELSE 0 END) AS totalCodUncollected",
+      "SUM(CASE WHEN order.collection > 0 AND order.status NOT IN ('SHIPPED', 'CANCEL', 'RETURN') THEN order.collection ELSE 0 END) AS totalCodUncollected",
 
       // Tổng tiền phí vận chuyển (chỉ tính các đơn không CANCEL hoặc RETURN)
       "SUM(CASE WHEN order.status NOT IN ('CANCEL', 'RETURN') THEN order.totalFee ELSE 0 END) AS totalShippingFee",
