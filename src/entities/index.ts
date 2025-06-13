@@ -7,3 +7,4 @@ export * from './order-log.entity';
 export * from './product.entity';
 export * from './tag.entity';
 export * from './product-tag.entity';
+export * from './order-product.entity';

@@ -1,24 +1,24 @@
 import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
 import { Product } from './product.entity';
-import { Tag } from './tag.entity';
+import { Order } from './order.entity';
 
-@Entity('product_tag')
-export class ProductTag {
+@Entity('order_product')
+export class OrderProduct {
   @PrimaryColumn({ type: 'varchar', length: 36 })
   productId: string;
 
   @PrimaryColumn({ type: 'varchar', length: 36 })
-  tagId: string;
+  orderId: string;
 
-  @ManyToOne(() => Product, (product) => product.productTags, {
+  @ManyToOne(() => Product, (product) => product.orderProducts, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'productId' })
   product?: Product;
 
-  @ManyToOne(() => Tag, (tag) => tag.productTags, {
+  @ManyToOne(() => Order, (order) => order.orderProducts, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'tagId' })
-  tag?: Tag;
+  @JoinColumn({ name: 'orderId' })
+  order?: Order;
 }

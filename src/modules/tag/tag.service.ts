@@ -8,9 +8,7 @@ import { Not } from 'typeorm';
 
 @Injectable()
 export class TagService {
-  constructor(
-    @Inject('TagRepositoryInterface') private readonly tagRepository: TagRepositoryInterface, // Replace 'any' with the actual type of your repository interface
-  ) {}
+  constructor(@Inject('TagRepositoryInterface') private readonly tagRepository: TagRepositoryInterface) {}
 
   async create(dto: CreateTagDto) {
     const slug = convertToSlug(dto.name);
@@ -24,8 +22,12 @@ export class TagService {
     });
   }
 
-  findAll() {
-    return this.tagRepository.findAll({}, { limit: 100, offset: 0, page: 1 });
+  async findAll() {
+    try {
+      return await this.tagRepository.findAll({}, { limit: 100, offset: 0, page: 1 });
+    } catch (error) {
+      console.log('🚀 ~ TagService ~ findAll ~ error:', error);
+    }
   }
 
   async update(id: string, dto: UpdateTagDto) {

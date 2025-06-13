@@ -6,3 +6,4 @@ export * from './order-log.interface';
 export * from './product.interface';
 export * from './tag.interface';
 export * from './product-tag.interface';
+export * from './order-product.interface';

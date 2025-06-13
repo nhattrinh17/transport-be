@@ -3,6 +3,7 @@ import { BaseEntity } from './base.entity';
 import { OrderDetail } from './order-detail.entity';
 import { ConfigReceiveOrder, PaymentMethodOrder } from '@common/enums';
 import { OrderLog } from './order-log.entity';
+import { OrderProduct } from './order-product.entity';
 
 @Entity('order')
 @Unique(['code', 'unit'])
@@ -85,6 +86,9 @@ export class Order extends BaseEntity {
 
   @OneToMany(() => OrderLog, (log) => log.order)
   log: OrderLog[];
+
+  @OneToMany(() => OrderProduct, (orderProd) => orderProd.product)
+  orderProducts: OrderProduct[];
 
   @DeleteDateColumn({ name: 'deletedAt' })
   deletedAt: Date;

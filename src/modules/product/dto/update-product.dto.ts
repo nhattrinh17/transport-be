@@ -1,5 +1,6 @@
+import { IsStringOrNumber } from '@common/pipes';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class UpdateProductDto {
   @IsOptional()
@@ -8,7 +9,7 @@ export class UpdateProductDto {
   name: string;
 
   @IsOptional()
-  @IsNumber()
+  @IsStringOrNumber()
   @ApiProperty({ name: 'quantity', type: Number, description: 'Số lượng sp' })
   quantity: number;
 
@@ -18,27 +19,32 @@ export class UpdateProductDto {
   status?: string;
 
   @IsOptional()
-  @IsNumber()
+  @IsStringOrNumber()
   @ApiProperty({ name: 'price', type: Number, description: 'Giá sp' })
   price: number;
 
   @IsOptional()
-  @IsNumber()
+  @IsStringOrNumber()
   @ApiProperty({ name: 'length', type: Number, description: 'Chiều dài sp' })
   length: number;
 
   @IsOptional()
-  @IsNumber()
+  @IsStringOrNumber()
   @ApiProperty({ name: 'width', type: Number, description: 'Chiều rộng sp' })
   width: number;
 
   @IsOptional()
-  @IsNumber()
+  @IsStringOrNumber()
   @ApiProperty({ name: 'height', type: Number, description: 'Chiều cao sp' })
   height: number;
 
   @IsOptional()
-  @IsNumber()
+  @IsStringOrNumber()
   @ApiProperty({ name: 'weight', type: Number, description: 'Trọng lượng sp' })
   weight: number;
+
+  @IsOptional()
+  @IsArray()
+  @ApiProperty({ name: 'tags', type: [String], description: 'Danh sách thẻ của sản phẩm' })
+  tags: string[];
 }

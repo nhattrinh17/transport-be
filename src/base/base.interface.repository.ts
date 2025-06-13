@@ -34,7 +34,10 @@ export interface BaseRepositoryInterface<T> {
 
   permanentlyDeleteByCondition(condition: object | any[]): Promise<boolean>;
 
-  // insertMany(items: T[]): Promise<T[]>;
+  insertMany(items: T[]): Promise<T[]>;
 
   count(condition?: object | any[]): Promise<number>;
+
+  decrease(id: string, field: string, value: number): Promise<T>;
+  increase(id: string, field: string, value: number): Promise<T>;
 }

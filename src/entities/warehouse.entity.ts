@@ -1,6 +1,7 @@
 import { Entity, Column, OneToMany } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { WarehouseDetail } from './warehouse-detail.entity';
+import { Product } from './product.entity';
 
 @Entity('warehouse')
 export class Warehouse extends BaseEntity {
@@ -27,4 +28,7 @@ export class Warehouse extends BaseEntity {
 
   @OneToMany(() => WarehouseDetail, (detail) => detail.warehouse)
   details: WarehouseDetail[];
+
+  @OneToMany(() => Product, (product) => product.warehouse)
+  products: Product[];
 }

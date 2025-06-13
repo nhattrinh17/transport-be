@@ -113,7 +113,29 @@ export abstract class BaseRepositoryAbstract<T> implements BaseRepositoryInterfa
     return true;
   }
 
+  insertMany(items: T[]): Promise<T[]> {
+    return this.repository.save(items);
+  }
+
   async count(condition?: object | any[]): Promise<number> {
     return await this.repository.count({ where: condition });
+  }
+
+  async decrease(id: string, field: string, value: number): Promise<T> {
+    const item = await this.findOneById(id);
+    if (!item) {
+      return null;
+    }
+    await this.repository.decrement({ id } as any, field, value);
+    return item;
+  }
+
+  async increase(id: string, field: string, value: number): Promise<T> {
+    const item = await this.findOneById(id);
+    if (!item) {
+      return null;
+    }
+    await this.repository.increment({ id } as any, field, value);
+    return item;
   }
 }

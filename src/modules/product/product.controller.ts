@@ -24,10 +24,21 @@ export class ProductController {
     return this.productService.findAll(pagination, filter);
   }
 
+  @Get('brief')
+  @ApiOperationCustom('Product', 'GET')
+  findAllBrief(@Pagination() pagination: PaginationDto, @Query() filter: QueryProductDto) {
+    return this.productService.findAllBrief(pagination, filter);
+  }
+
   @Patch(':id')
   @ApiOperationCustom('Product', 'PATCH')
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productService.update(id, updateProductDto);
+  async update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
+    try {
+      return await this.productService.update(id, updateProductDto);
+    } catch (error) {
+      console.log('🚀 ~ ProductController ~ update ~ error:', error);
+      throw new Error(error.message || 'An error occurred while updating the product');
+    }
   }
 
   @Delete(':id')

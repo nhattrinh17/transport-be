@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner, Table, TableIndex } from 'typeorm';
+import { MigrationInterface, QueryRunner, Table, TableForeignKey, TableIndex } from 'typeorm';
 
 export class CreateProductTable1749703749507 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -10,6 +10,12 @@ export class CreateProductTable1749703749507 implements MigrationInterface {
             name: 'id',
             type: 'varchar(36)',
             isPrimary: true,
+          },
+          {
+            name: 'warehouseId',
+            type: 'varchar(36)',
+            isNullable: true,
+            comment: 'ID kho hàng',
           },
           {
             name: 'name',
@@ -92,9 +98,30 @@ export class CreateProductTable1749703749507 implements MigrationInterface {
         columnNames: ['slug'],
       }),
     );
+
+    // Add foreign key for warehouseId if needed
+    await queryRunner.createForeignKey(
+      'product',
+      new TableForeignKey({
+        columnNames: ['warehouseId'],
+        referencedColumnNames: ['id'],
+        referencedTableName: 'warehouse',
+        onDelete: 'SET NULL',
+      }),
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    const table = await queryRunner.getTable('product');
+    if (table) {
+      const foreignKeys = table.foreignKeys;
+      for (const fk of foreignKeys) {
+        if (fk.columnNames.indexOf('warehouseId') !== -1) {
+          await queryRunner.dropForeignKey('product', fk);
+        }
+      }
+    }
+
     await queryRunner.dropIndex('product', 'IDX_product_slug');
     await queryRunner.dropTable('product');
   }

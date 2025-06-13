@@ -7,7 +7,7 @@ export class Tag extends BaseEntity {
   @Column({ type: 'varchar', length: 256 })
   name: string;
 
-  @Column({ type: 'varchar' }) k;
+  @Column({ type: 'varchar' })
   description: string;
 
   @Column({ type: 'varchar', length: 256 })
