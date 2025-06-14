@@ -7,4 +7,7 @@ export class QueryProductDto extends PaginationDto {
 
   @IsOptional()
   search?: string;
+
+  @IsOptional()
+  warehouseId?: string;
 }

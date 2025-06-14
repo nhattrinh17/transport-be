@@ -26,6 +26,11 @@ export class CreateOrderDto {
 
   @IsString()
   @IsOptional()
+  @ApiProperty({ name: 'warehouseId', description: 'warehouseId', example: 'VTP123456' })
+  warehouseId?: string;
+
+  @IsString()
+  @IsOptional()
   @ApiProperty({ name: 'senderName', description: 'Têm shop or tên người gửi', example: 'COD' })
   senderName: string;
 

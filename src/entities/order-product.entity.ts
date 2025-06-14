@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryColumn, ManyToOne, JoinColumn, Column } from 'typeorm';
 import { Product } from './product.entity';
 import { Order } from './order.entity';
 
@@ -9,6 +9,9 @@ export class OrderProduct {
 
   @PrimaryColumn({ type: 'varchar', length: 36 })
   orderId: string;
+
+  @Column()
+  quantity: number;
 
   @ManyToOne(() => Product, (product) => product.orderProducts, {
     onDelete: 'CASCADE',

@@ -13,8 +13,8 @@ export class ProvinceService {
   ) {}
 
   async getAllProvince() {
-    const keyViettel = `${process.env.APP_ID}:province:viettel`;
-    const keyGHN = `${process.env.APP_ID}:province:ghn`;
+    const keyViettel = `${process.env.APP_ID}:${process.env.APP_NAME}:province:viettel`;
+    const keyGHN = `${process.env.APP_ID}:${process.env.APP_NAME}:province:ghn`;
     const ttl = 60 * 60 * 24;
     let providerViettel;
     let providerGHN;
@@ -54,8 +54,8 @@ export class ProvinceService {
   async getAllDistrict(dto: GetDistrictDto) {
     try {
       if (!dto.provinceIdGHN || !dto.provinceIdViettel) throw new Error(messageResponseError.system.missing_data);
-      const keyViettel = `${process.env.APP_ID}:district:viettel:${dto.provinceIdViettel}`;
-      const keyGHN = `${process.env.APP_ID}:district:ghn:${dto.provinceIdGHN}`;
+      const keyViettel = `${process.env.APP_ID}:${process.env.APP_NAME}:district:viettel:${dto.provinceIdViettel}`;
+      const keyGHN = `${process.env.APP_ID}:${process.env.APP_NAME}:district:ghn:${dto.provinceIdGHN}`;
       const ttl = 60 * 60;
       let districtViettel;
       let districtGHN;
@@ -100,8 +100,8 @@ export class ProvinceService {
   async getAllWard(dto: GetWardsDto) {
     try {
       if (!dto.districtIdGHN || !dto.districtIdViettel) throw new Error(messageResponseError.system.missing_data);
-      const keyViettel = `${process.env.APP_ID}:wards:viettel:${dto.districtIdViettel}`;
-      const keyGHN = `${process.env.APP_ID}:wards:ghn:${dto.districtIdGHN}`;
+      const keyViettel = `${process.env.APP_ID}:${process.env.APP_NAME}:wards:viettel:${dto.districtIdViettel}`;
+      const keyGHN = `${process.env.APP_ID}:${process.env.APP_NAME}:wards:ghn:${dto.districtIdGHN}`;
       const ttl = 60 * 60;
       let wardsViettel;
       let wardsGHN;

@@ -15,7 +15,7 @@ export class AxiosInsService {
 
   async getTokenViettel(): Promise<string> {
     try {
-      const keyRedis = `${process.env.APP_ID}:token:viettel`;
+      const keyRedis = `${process.env.APP_ID}:${process.env.APP_NAME}:token:viettel`;
       const dataRedis = await this.redisService.get(keyRedis);
       if (dataRedis) return dataRedis;
 

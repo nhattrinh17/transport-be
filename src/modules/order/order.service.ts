@@ -14,6 +14,8 @@ import { PaginationDto } from '@common/decorators';
 import { OrderLogService } from '@modules/order-log/order-log.service';
 import { QueryOrderDto, QueryOrderGetCountDto } from './dto/query-order.dto';
 import { Between } from 'typeorm';
+import { ProductService } from '@modules/product/product.service';
+import RedisService from '@common/services/redis.service';
 
 @Injectable()
 export class OrderService {
@@ -24,6 +26,8 @@ export class OrderService {
     private readonly orderDetailRepository: OrderDetailRepositoryInterface,
     private readonly axiosInsService: AxiosInsService,
     private readonly orderLogService: OrderLogService,
+    private readonly productService: ProductService,
+    private readonly redisService: RedisService,
   ) {}
 
   handleGetConfigReceive(unit: string, configReceive: ConfigReceiveOrder) {
@@ -632,6 +636,7 @@ export class OrderService {
         ...dataOrder.detail,
         orderId: order.id,
       });
+      this.productService.handleCreateOrderProduct(dto.items, order.id, dto.warehouseId);
       return {
         message: 'Tạo đơn hàng thành công',
         code: order.code,
@@ -745,9 +750,19 @@ export class OrderService {
   }
 
   async findOne(id: string) {
-    const order = await this.orderRepository.findOneByIdAndJoin(id);
-    if (!order) throw new Error(messageResponseError.order.order_not_found);
-    return order;
+    try {
+      const keyCache = `${process.env.APP_ID}:${process.env.APP_NAME}:order:${id}`;
+      const cacheOrder = await this.redisService.get(keyCache);
+      if (cacheOrder) {
+        return JSON.parse(cacheOrder);
+      }
+      const order = await this.orderRepository.findOneByIdAndJoin(id);
+      await this.redisService.setExpire(keyCache, JSON.stringify(order), 60 * 60); // Cache for 1 hour
+      if (!order) throw new Error(messageResponseError.order.order_not_found);
+      return order;
+    } catch (error) {
+      console.log('🚀 ~ OrderService ~ findOne ~ error:', error);
+    }
   }
 
   async cancel(id: string) {
@@ -831,6 +846,7 @@ export class OrderService {
             changeBy: 'Người dùng',
           }),
         ]);
+        this.productService.handleCancelOrder(order.id);
         return { message: 'Hủy đơn hàng thành công' };
       } else {
         throw new Error(messageResponseError.order.cancel_order_error);

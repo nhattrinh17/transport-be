@@ -87,7 +87,7 @@ export class Order extends BaseEntity {
   @OneToMany(() => OrderLog, (log) => log.order)
   log: OrderLog[];
 
-  @OneToMany(() => OrderProduct, (orderProd) => orderProd.product)
+  @OneToMany(() => OrderProduct, (orderProd) => orderProd.order)
   orderProducts: OrderProduct[];
 
   @DeleteDateColumn({ name: 'deletedAt' })

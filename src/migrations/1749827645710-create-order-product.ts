@@ -7,21 +7,18 @@ export class CreateOrderProduct1749827645710 implements MigrationInterface {
         name: 'order_product',
         columns: [
           {
-            name: 'id',
-            type: 'varchar(36)',
-            isPrimary: true,
-          },
-          {
             name: 'productId',
             type: 'varchar(36)',
             isNullable: false,
             comment: 'ID sản phẩm',
+            isPrimary: true,
           },
           {
             name: 'orderId',
             type: 'varchar(36)',
             isNullable: false,
             comment: 'ID đơn hàng',
+            isPrimary: true,
           },
           {
             name: 'quantity',

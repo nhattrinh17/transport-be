@@ -61,7 +61,15 @@ export class OrderRepository extends BaseRepositoryAbstract<Order> implements Or
   }
 
   findOneByIdAndJoin(id: string): Promise<Order | null> {
-    return this.OrderRepository.createQueryBuilder('order').leftJoinAndSelect('order.detail', 'detail').leftJoinAndSelect('order.log', 'log').where('order.id = :id', { id }).getOne();
+    return this.OrderRepository.createQueryBuilder('order')
+      .leftJoinAndSelect('order.detail', 'detail')
+      .leftJoinAndSelect('order.log', 'log')
+      .leftJoin('order.orderProducts', 'orderProducts')
+      .addSelect(['orderProducts.productId', 'orderProducts.quantity'])
+      .leftJoin('orderProducts.product', 'product')
+      .addSelect(['product.name', 'product.price'])
+      .where('order.id = :id', { id })
+      .getOne();
   }
 
   getDataDashboard(condition: any): Promise<any> {

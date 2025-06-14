@@ -33,6 +33,7 @@ export class ProductService {
           ...i,
           slug,
           quantity: 0,
+          status: 'INACTIVE',
         });
         i.code = product.id;
         return i;
@@ -41,8 +42,32 @@ export class ProductService {
     const orderProducts = dto.map((item) => ({
       productId: item.code,
       orderId,
+      quantity: item.quantity,
     }));
     return this.orderProductRepository.insertMany(orderProducts);
+  }
+
+  async handleCancelOrder(orderId: string) {
+    try {
+      const { data: orderProducts } = await this.orderProductRepository.findAll(
+        { orderId },
+        {
+          limit: 1000,
+          offset: 0,
+          page: 1,
+          projection: ['productId', 'quantity'],
+          sort: 'productId',
+          typeSort: 'ASC',
+        },
+      );
+
+      const updateQuantityPromises = orderProducts.map((item) => {
+        return this.productRepository.increase(item.productId, 'quantity', item.quantity);
+      });
+      await Promise.all(updateQuantityPromises);
+    } catch (error) {
+      console.error('Error handling cancel order:', error);
+    }
   }
 
   async create(dto: CreateProductDto) {
@@ -75,6 +100,9 @@ export class ProductService {
       if (filter?.search) {
         condition['name'] = Like(`%${filter.search}%`);
       }
+      if (filter?.warehouseId) {
+        condition['warehouseId'] = filter.warehouseId;
+      }
       return await this.productRepository.findAllCustom(condition, {
         ...pagination,
       });
@@ -91,6 +119,9 @@ export class ProductService {
       }
       if (filter?.search) {
         condition['name'] = Like(`%${filter.search}%`);
+      }
+      if (filter?.warehouseId) {
+        condition['warehouseId'] = filter.warehouseId;
       }
       return await this.productRepository.findAll(condition, {
         ...pagination,

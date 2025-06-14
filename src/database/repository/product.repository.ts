@@ -12,10 +12,15 @@ export class ProductRepository extends BaseRepositoryAbstract<Product> implement
   }
 
   async findAllCustom(condition: object | any[], options?: { projection: (keyof Product)[]; sort: string; typeSort: 'ASC' | 'DESC'; page: number; offset: number; limit: number }): Promise<FindAllResponse<Product>> {
-    const qb = this.productRepository.createQueryBuilder('product').leftJoinAndSelect('product.productTags', 'productTag').leftJoinAndSelect('productTag.tag', 'tag');
+    const qb = this.productRepository
+      .createQueryBuilder('product')
+      .leftJoin('product.warehouse', 'warehouse')
+      .addSelect(['warehouse.name'])
+      .leftJoinAndSelect('product.productTags', 'productTag')
+      .leftJoin('productTag.tag', 'tag')
+      .addSelect(['tag.name']);
 
     qb.where(condition);
-
     if (options?.projection?.length) {
       qb.select(options.projection.map((field) => `product.${field}`));
     }

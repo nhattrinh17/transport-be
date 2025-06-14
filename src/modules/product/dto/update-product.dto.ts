@@ -3,6 +3,11 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class UpdateProductDto {
+  @IsString()
+  @IsOptional()
+  @ApiProperty({ name: 'warehouseId', type: String, description: 'Tên sp' })
+  warehouseId?: string;
+
   @IsOptional()
   @IsString()
   @ApiProperty({ name: 'name', type: String, description: 'Tên sp' })
